@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cinema-bg: #0f172a;
+  --color-cinema-card: #1e293b;
+  --color-cinema-primary: #e11d48;
+  --color-cinema-text: #f8fafc;
+  --color-cinema-muted: #94a3b8;
+}
+
+body {
+  background-color: var(--color-cinema-bg);
+  color: var(--color-cinema-text);
+  font-family: sans-serif;
+}

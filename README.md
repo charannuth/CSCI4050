@@ -46,3 +46,13 @@ This page is a UI prototype only.
 • Seeded movies must include:
 o Multiple genres
 o Both states: Coming Soon and Currently Running
+
+Evaluation (150 points)
+• Home Page with DB integration (40 pts)
+• Movie Details Page & showtimes (20 pts)
+• Search by title (20 pts)
+• Filter by genre or show date, integrated with the DB (20 pts)
+• Trailer embedded & playable (20 pts)
+• Showtime navigation to Booking Page, no backend code (UI only) (20 pts)
+• UI/UX (Look and feel of the UI and providing a positive user experience) (5 pts)
+• Demo readiness & professionalism (5 pts)

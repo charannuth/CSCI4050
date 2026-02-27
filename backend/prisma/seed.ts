@@ -17,94 +17,94 @@ async function main() {
 
   const movies = [
     {
-      title: "Neon Horizon",
+      title: "Dune: Part Two",
       rating: "PG-13",
-      description: "A hacker stumbles into a city-wide conspiracy in a near-future metro.",
+      description: "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.",
       genre: "Sci-Fi",
       status: MovieStatus.CURRENTLY_RUNNING,
-      posterUrl: "https://picsum.photos/seed/neon-horizon/500/750",
-      trailerUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      posterUrl: "https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg",
+      trailerUrl: "https://www.youtube.com/embed/8g18jFHCLXk"
     },
     {
-      title: "Maple Street Mystery",
-      rating: "PG",
-      description: "A neighborhood’s annual block party takes an unexpected turn.",
-      genre: "Mystery",
-      status: MovieStatus.CURRENTLY_RUNNING,
-      posterUrl: "https://picsum.photos/seed/maple-street/500/750",
-      trailerUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-    },
-    {
-      title: "Summer Encore",
+      title: "The Batman",
       rating: "PG-13",
-      description: "A touring musician returns home for one last show—and one last chance.",
-      genre: "Drama",
+      description: "When a sadistic serial killer begins murdering key political figures in Gotham, Batman is forced to investigate the city's hidden corruption.",
+      genre: "Action",
       status: MovieStatus.CURRENTLY_RUNNING,
-      posterUrl: "https://picsum.photos/seed/summer-encore/500/750",
-      trailerUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      posterUrl: "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg",
+      trailerUrl: "https://www.youtube.com/embed/mqqft2x_Aa4"
     },
     {
-      title: "The Last Lantern",
-      rating: "PG",
-      description: "A young inventor finds a lantern that reveals hidden paths.",
-      genre: "Adventure",
-      status: MovieStatus.CURRENTLY_RUNNING,
-      posterUrl: "https://picsum.photos/seed/last-lantern/500/750",
-      trailerUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-    },
-    {
-      title: "Cafeteria Royale",
-      rating: "PG-13",
-      description: "A lunchroom rivalry escalates into an all-out culinary showdown.",
+      title: "Everything Everywhere All at Once",
+      rating: "R",
+      description: "An aging Chinese immigrant is swept into an adventure in which she must connect different versions of herself in the parallel universe.",
       genre: "Comedy",
       status: MovieStatus.CURRENTLY_RUNNING,
-      posterUrl: "https://picsum.photos/seed/cafeteria-royale/500/750",
-      trailerUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      posterUrl: "https://image.tmdb.org/t/p/w500/w3LxiVYdWWRvEVdn5RYq6jIqkb1.jpg",
+      trailerUrl: "https://www.youtube.com/embed/wxN1T1uxQ2g"
     },
     {
-      title: "Midnight Station",
-      rating: "R",
-      description: "A late-night commuter train becomes a maze of choices and consequences.",
-      genre: "Thriller",
+      title: "Top Gun: Maverick",
+      rating: "PG-13",
+      description: "After thirty years, Maverick is still pushing the envelope as a top naval aviator, but must confront ghosts of his past when he leads TOP GUN's elite graduates on a mission.",
+      genre: "Action",
       status: MovieStatus.CURRENTLY_RUNNING,
-      posterUrl: "https://picsum.photos/seed/midnight-station/500/750",
-      trailerUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      posterUrl: "https://image.tmdb.org/t/p/w500/62HCnUTziyWcpDaBO2i1DX17ljH.jpg",
+      trailerUrl: "https://www.youtube.com/embed/qSqVVswa420"
     },
     {
-      title: "Skyline Hearts",
+      title: "Oppenheimer",
+      rating: "R",
+      description: "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.",
+      genre: "Drama",
+      status: MovieStatus.CURRENTLY_RUNNING,
+      posterUrl: "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
+      trailerUrl: "https://www.youtube.com/embed/uYPbbksJxIg"
+    },
+    {
+      title: "Spider-Man: No Way Home",
       rating: "PG-13",
-      description: "Two architects compete for a project and find something unexpected.",
-      genre: "Romance",
+      description: "With Spider-Man's identity now revealed, Peter asks Doctor Strange for help. When a spell goes wrong, dangerous foes from other worlds start to appear.",
+      genre: "Action",
+      status: MovieStatus.CURRENTLY_RUNNING,
+      posterUrl: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
+      trailerUrl: "https://www.youtube.com/embed/JfVOs4VSpmA"
+    },
+    {
+      title: "Barbie",
+      rating: "PG-13",
+      description: "Barbie suffers a crisis that leads her to question her world and her existence.",
+      genre: "Comedy",
       status: MovieStatus.COMING_SOON,
-      posterUrl: "https://picsum.photos/seed/skyline-hearts/500/750",
-      trailerUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      posterUrl: "https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
+      trailerUrl: "https://www.youtube.com/embed/pBk4NYhWNMM"
     },
     {
-      title: "Dragonfruit Protocol",
+      title: "Black Panther: Wakanda Forever",
       rating: "PG-13",
-      description: "A codebreaker races to stop a cascading system failure.",
+      description: "The people of Wakanda fight to protect their home from intervening world powers as they mourn the death of King T'Challa.",
       genre: "Action",
       status: MovieStatus.COMING_SOON,
-      posterUrl: "https://picsum.photos/seed/dragonfruit-protocol/500/750",
-      trailerUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      posterUrl: "https://image.tmdb.org/t/p/w500/sv1xJUazXeYqALzczSZ3O6nkH75.jpg",
+      trailerUrl: "https://www.youtube.com/embed/RlOB3UALvrQ"
     },
     {
-      title: "Orbit of Ash",
+      title: "Inception",
       rating: "PG-13",
-      description: "A rescue mission to a damaged station uncovers an impossible signal.",
+      description: "A thief who steals corporate secrets through dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
       genre: "Sci-Fi",
       status: MovieStatus.COMING_SOON,
-      posterUrl: "https://picsum.photos/seed/orbit-of-ash/500/750",
-      trailerUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      posterUrl: "https://image.tmdb.org/t/p/w500/9gk7adHYeDvHkCSEqAvQNLV5ur4.jpg",
+      trailerUrl: "https://www.youtube.com/embed/YoHD9XEInc0"
     },
     {
-      title: "Garden of Glass",
-      rating: "PG",
-      description: "A botanist learns the greenhouse has a mind of its own.",
-      genre: "Fantasy",
+      title: "La La Land",
+      rating: "PG-13",
+      description: "A jazz pianist falls for an aspiring actress in Los Angeles.",
+      genre: "Romance",
       status: MovieStatus.COMING_SOON,
-      posterUrl: "https://picsum.photos/seed/garden-of-glass/500/750",
-      trailerUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      posterUrl: "https://image.tmdb.org/t/p/w500/fEa1D6k6a3VqAPfvEJkyTMNg7D.jpg",
+      trailerUrl: "https://www.youtube.com/embed/0pdqf4P9MB8"
     }
   ];
 

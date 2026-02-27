@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum MovieStatus {
+  CURRENTLY_RUNNING
+  COMING_SOON
+}
+
+model Movie {
+  id          String      @id @default(cuid())
+  title       String      @unique
+  rating      String?
+  description String?
+  posterUrl   String?
+  trailerUrl  String?
+  genre       String
+  status      MovieStatus @default(CURRENTLY_RUNNING)
+
+  showtimes   Showtime[]
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([genre])
+  @@index([status])
+  @@index([title])
+}
+
+model Showtime {
+  id        String   @id @default(cuid())
+  startsAt  DateTime
+
+  movieId   String
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([movieId])
+  @@index([startsAt])
+}
+

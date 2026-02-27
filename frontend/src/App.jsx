@@ -1,5 +1,6 @@
 import './App.css'
 import BookingPrototype from './components/BookingPrototype'
+import BackendStatus from './components/BackendStatus'
 
 function App() {
   return (
@@ -16,8 +17,8 @@ function App() {
       </header>
 
       {/* Main Content Area */}
-      <main>
-        {/* Rendering your new component right here */}
+      <main className="px-8">
+        <BackendStatus />
         <BookingPrototype />
       </main>
 

@@ -19,6 +19,15 @@ npm run dev
 
 API will be available on `http://localhost:3002` by default.
 
+## Frontend integration
+
+The frontend Vite dev server proxies `/api` to this backend. Start both servers:
+
+1. Backend: `cd backend && npm run dev`
+2. Frontend: `cd frontend && npm run dev`
+
+The frontend uses `src/api.js` to call these endpoints. CORS is configured for `http://localhost:5173`.
+
 ## Endpoints
 
 - `GET /api/health`

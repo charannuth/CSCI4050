@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getMoviesHome } from "./api";
+import { getMoviesHome, getMovies, getMoviesMeta } from "./api";
 
 function MovieCard({ movie, onSelectMovie }) {
   return (
@@ -51,12 +51,22 @@ export default function Home({ onSelectMovie }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // search filter consts
+  const [searchText, setSearchText] = useState("");
+  const [selectedGenre, setSelectedGenre] = useState("");
+  const [filteredMovies, setFilteredMovies] = useState([]);
+  const [genres, setGenres] = useState([]);
+  const [isFiltering, setIsFiltering] = useState(false);
+
   useEffect(() => {
     async function loadMovies() {
       try {
         const data = await getMoviesHome();
         setCurrentlyRunning(data.currentlyRunning || []);
         setComingSoon(data.comingSoon || []);
+
+        const meta = await getMoviesMeta();
+        setGenres(meta.genres || []);
       } catch (err) {
         setError("Failed to load movies.");
       } finally {
@@ -66,6 +76,24 @@ export default function Home({ onSelectMovie }) {
 
     loadMovies();
   }, []);
+
+  async function handleSearch() {
+    if (!searchText && !selectedGenre) {
+      setIsFiltering(false);
+      return;
+    }
+    try {
+      const data = await getMovies({
+        q: searchText,
+        genre: selectedGenre
+      });
+
+      setFilteredMovies(data.movies || []);
+      setIsFiltering(true);
+    } catch (err) {
+      setError("Search failed.");
+    }
+  }
 
   if (loading) {
     return <div className="page-message">Loading movies...</div>;
@@ -81,24 +109,59 @@ export default function Home({ onSelectMovie }) {
         <h1>Cinema E-Booking System</h1>
         <p>Select a movie to start booking.</p>
 
-        <div className="filters-placeholder">
-          <div className="placeholder-box">Search bar goes here later</div>
-          <div className="placeholder-box">Genre filter goes here later</div>
+        <div className="filters-container">
+          <input
+            type="text"
+            placeholder="Search by title..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          ></input>
+
+          <select 
+            value={selectedGenre}
+            onChange={(e) => setSelectedGenre(e.target.value)}
+          >
+
+            <option value="">All Genres</option>
+            {genres.map((genre, index) => (
+              <option key={index} value={genre}>
+                {genre}
+                </option>
+            ))}
+          </select>
+
+          <button onClick={handleSearch}>
+            Search
+          </button>
         </div>
       </header>
 
       <main>
-        <MovieSection
-          title="Currently Running"
-          movies={currentlyRunning}
-          onSelectMovie={onSelectMovie}
-        />
-        <MovieSection
-          title="Coming Soon"
-          movies={comingSoon}
-          onSelectMovie={onSelectMovie}
-        />
-      </main>
+        {isFiltering ? (
+          filteredMovies.length > 0 ? (
+            <MovieSection
+              title="Search Results"
+              movies={filteredMovies}
+              onSelectMovie={onSelectMovie}
+            />
+          ) : (
+            <div className="page-message">No movies found.</div>
+          )
+        ) : (
+        <>
+          <MovieSection
+            title="Currently Running"
+            movies={currentlyRunning}
+            onSelectMovie={onSelectMovie}
+          />
+          <MovieSection
+            title="Coming Soon"
+            movies={comingSoon}
+            onSelectMovie={onSelectMovie}
+          />
+        </>
+      )}
+    </main>
     </div>
   );
 }

@@ -94,7 +94,7 @@ async function main() {
       description: "A thief who steals corporate secrets through dream-sharing technology is given the inverse task of planting an idea into the mind of a C.E.O.",
       genre: "Sci-Fi",
       status: MovieStatus.COMING_SOON,
-      posterUrl: "https://image.tmdb.org/t/p/w500/9gk7adHYeDvHkCSEqAvQNLV5ur4.jpg",
+      posterUrl: "https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg",
       trailerUrl: "https://www.youtube.com/embed/YoHD9XEInc0"
     },
     {
@@ -103,7 +103,7 @@ async function main() {
       description: "A jazz pianist falls for an aspiring actress in Los Angeles.",
       genre: "Romance",
       status: MovieStatus.COMING_SOON,
-      posterUrl: "https://image.tmdb.org/t/p/w500/fEa1D6k6a3VqAPfvEJkyTMNg7D.jpg",
+      posterUrl: "https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg",
       trailerUrl: "https://www.youtube.com/embed/0pdqf4P9MB8"
     }
   ];

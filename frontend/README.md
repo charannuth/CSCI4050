@@ -1,4 +1,32 @@
-# React + Vite
+# CES Frontend
+
+React + Vite frontend for the Cinema E-Booking System.
+
+## Connecting to the Backend
+
+1. Start the backend first: `cd ../backend && npm run dev` (runs on port 3002)
+2. Start the frontend: `npm run dev` (runs on port 5173)
+3. Vite proxies `/api` to the backend, so use the API client in `src/api.js`:
+
+```js
+import { getMoviesHome, getMovie, getMovies, getMoviesMeta } from './api'
+
+// Home page (currently running + coming soon)
+const { currentlyRunning, comingSoon } = await getMoviesHome()
+
+// Movie details
+const { movie } = await getMovie(movieId)
+
+// Search / filter
+const { movies } = await getMovies({ q: 'Dune', genre: 'Sci-Fi', date: '2026-02-27' })
+
+// Filter options (genres, show dates)
+const { genres, showDates } = await getMoviesMeta()
+```
+
+For production, set `VITE_API_BASE` in `.env` to your backend URL.
+
+---
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 

@@ -5,12 +5,18 @@
  */
 const BASE = import.meta.env.VITE_API_BASE ?? ''
 
+const FETCH_TIMEOUT = 10000
+
 async function request(path, options = {}) {
   const url = `${BASE}${path}`
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT)
   const res = await fetch(url, {
+    signal: controller.signal,
     headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options,
   })
+  clearTimeout(timeoutId)
   if (!res.ok) {
     const err = new Error(`API error ${res.status}`)
     err.status = res.status

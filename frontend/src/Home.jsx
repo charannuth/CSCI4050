@@ -1,14 +1,22 @@
 import { useEffect, useState } from "react";
 import { getMoviesHome, getMovies, getMoviesMeta } from "./api";
 
-function MovieCard({ movie, onSelectMovie }) {
+function MovieCard({ movie, onSelectMovie, onViewTrailer }) {
   return (
     <div className="movie-card">
-      <img
-        src={movie.posterUrl}
-        alt={movie.title}
-        className="movie-poster"
-      />
+      <div
+        className="movie-poster-wrapper"
+        onClick={() => onViewTrailer?.(movie)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === "Enter" && onViewTrailer?.(movie)}
+      >
+        <img
+          src={movie.posterUrl}
+          alt={movie.title}
+          className="movie-poster"
+        />
+      </div>
 
       <div className="movie-info">
         <h3>{movie.title}</h3>
@@ -28,7 +36,7 @@ function MovieCard({ movie, onSelectMovie }) {
   );
 }
 
-function MovieSection({ title, movies, onSelectMovie }) {
+function MovieSection({ title, movies, onSelectMovie, onViewTrailer }) {
   return (
     <section className="movie-section">
       <h2>{title}</h2>
@@ -38,6 +46,7 @@ function MovieSection({ title, movies, onSelectMovie }) {
             key={movie.id}
             movie={movie}
             onSelectMovie={onSelectMovie}
+            onViewTrailer={onViewTrailer}
           />
         ))}
       </div>
@@ -45,7 +54,7 @@ function MovieSection({ title, movies, onSelectMovie }) {
   );
 }
 
-export default function Home({ onSelectMovie }) {
+export default function Home({ onSelectMovie, onViewTrailer }) {
   const [currentlyRunning, setCurrentlyRunning] = useState([]);
   const [comingSoon, setComingSoon] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -143,6 +152,7 @@ export default function Home({ onSelectMovie }) {
               title="Search Results"
               movies={filteredMovies}
               onSelectMovie={onSelectMovie}
+              onViewTrailer={onViewTrailer}
             />
           ) : (
             <div className="page-message">No movies found.</div>
@@ -153,11 +163,13 @@ export default function Home({ onSelectMovie }) {
             title="Currently Running"
             movies={currentlyRunning}
             onSelectMovie={onSelectMovie}
+            onViewTrailer={onViewTrailer}
           />
           <MovieSection
             title="Coming Soon"
             movies={comingSoon}
             onSelectMovie={onSelectMovie}
+            onViewTrailer={onViewTrailer}
           />
         </>
       )}

@@ -102,6 +102,15 @@ body {
   flex-shrink: 0;
 }
 
+.movie-poster-wrapper {
+  cursor: pointer;
+  position: relative;
+}
+
+.movie-poster-wrapper:hover {
+  opacity: 0.92;
+}
+
 .movie-poster {
   width: 100%;
   height: 320px;
@@ -418,6 +427,98 @@ body {
   background-color: #27763a;
 }
 
+/* Movie Trailer Page */
+.trailer-page {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.trailer-header {
+  margin-bottom: 20px;
+}
+
+.trailer-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.trailer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.trailer-title {
+  margin: 0;
+  font-size: 28px;
+  text-align: left;
+}
+
+.trailer-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  color: #666;
+}
+
+.trailer-rating {
+  font-weight: 600;
+}
+
+.trailer-synopsis h3 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+}
+
+.trailer-synopsis p {
+  margin: 0;
+  line-height: 1.6;
+  font-size: 15px;
+  color: #333;
+}
+
+.trailer-right {
+  position: sticky;
+  top: 24px;
+}
+
+.trailer-embed-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #222;
+  border: 1px solid #d6d6d6;
+}
+
+.trailer-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.trailer-no-url {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+}
+
+.trailer-no-url p {
+  margin: 0;
+}
+
 @media (max-width: 900px) {
   .checkout-grid {
     grid-template-columns: 1fr;
@@ -425,5 +526,13 @@ body {
 
   .seat-grid {
     grid-template-columns: repeat(5, 1fr);
+  }
+
+  .trailer-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .trailer-right {
+    position: static;
   }
 }

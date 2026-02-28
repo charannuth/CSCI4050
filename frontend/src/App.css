@@ -48,6 +48,34 @@ body {
   font-size: 14px;
 }
 
+.filters-container {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.filters-container input,
+.filters-container select {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.filters-container button {
+  background-color: #b30000;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+} 
+
+.filters-container button:hover {
+  background-color: #800000;
+}
+
 .movie-section {
   margin-bottom: 36px;
 }

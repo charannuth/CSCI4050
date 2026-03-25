@@ -2,6 +2,44 @@ import { useEffect, useState } from "react";
 import { getMoviesHome, getMovies, getMoviesMeta } from "./api";
 
 function MovieCard({ movie, onSelectMovie, onViewTrailer }) {
+  // NOTE: If your backend eventually sends down whether a movie is already a favorite, 
+  // you can change this to: useState(movie.isFavorite || false)
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  const handleFavoriteClick = async (e) => {
+    e.stopPropagation(); // Stops the card from being clicked when they hit the heart
+
+    const currentFavStatus = isFavorite;
+
+    // 1. Optimistic UI Update: Instantly change the heart color for the user
+    setIsFavorite(!currentFavStatus);
+
+    // 2. The API Call to your Backend
+    try {
+      // TODO: Update this URL to match your team's actual backend route!
+      const response = await fetch("http://localhost:8080/api/users/favorites", {
+        method: currentFavStatus ? "DELETE" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          // Uncomment the line below if your team is using authentication tokens!
+          // "Authorization": `Bearer ${localStorage.getItem("token")}` 
+        },
+        body: JSON.stringify({ movieId: movie.id })
+      });
+
+      if (!response.ok) {
+        throw new Error("Server failed to save favorite");
+      }
+      
+    } catch (error) {
+      console.error("Error updating favorites:", error);
+      
+      // 3. Error Handling: Revert the heart back to its original state if the server fails
+      setIsFavorite(currentFavStatus);
+      alert("Uh oh! We couldn't save that to your favorites. Please check your connection.");
+    }
+  };
+
   return (
     <div className="movie-card">
       <div
@@ -10,7 +48,45 @@ function MovieCard({ movie, onSelectMovie, onViewTrailer }) {
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === "Enter" && onViewTrailer?.(movie)}
+        style={{ position: "relative" }} // Guarantees the absolute heart stays inside the poster
       >
+        
+        {/* --- ADDED: Favorites Heart Icon & API Logic (Requirement 4) --- */}
+        <button
+          onClick={handleFavoriteClick}
+          title={isFavorite ? "Remove from Favorites" : "Add to Favorites"} // Required tooltip
+          style={{
+            position: "absolute",
+            top: "10px",
+            right: "10px",
+            zIndex: 10,
+            background: "rgba(0, 0, 0, 0.6)",
+            border: "none",
+            borderRadius: "50%",
+            padding: "8px",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill={isFavorite ? "#ef4444" : "none"} // Fills red if clicked
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+            stroke={isFavorite ? "#ef4444" : "white"}
+            style={{ width: "24px", height: "24px" }}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"
+            />
+          </svg>
+        </button>
+        {/* --------------------------------------------------- */}
+
         <img
           src={movie.posterUrl}
           alt={movie.title}
@@ -130,7 +206,6 @@ export default function Home({ onSelectMovie, onViewTrailer }) {
             value={selectedGenre}
             onChange={(e) => setSelectedGenre(e.target.value)}
           >
-
             <option value="">All Genres</option>
             {genres.map((genre, index) => (
               <option key={index} value={genre}>

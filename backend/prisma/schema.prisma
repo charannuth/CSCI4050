@@ -7,11 +7,36 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ==========================================
+// ENUMERATIONS
+// ==========================================
 enum MovieStatus {
   CURRENTLY_RUNNING
   COMING_SOON
 }
 
+// ==========================================
+// USER & ACCOUNTS
+// ==========================================
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  password       String    // Will store the securely hashed password
+  firstName      String
+  lastName       String
+  status         String   @default("ACTIVE") // Requirement for Active/Inactive users
+  role           String   @default("CUSTOMER")
+
+  // Many-to-Many relationship for the Favorites feature
+  favoriteMovies Movie[]  @relation("UserFavorites")
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// ==========================================
+// CINEMA CORE
+// ==========================================
 model Movie {
   id          String      @id @default(cuid())
   title       String      @unique
@@ -22,7 +47,9 @@ model Movie {
   genre       String
   status      MovieStatus @default(CURRENTLY_RUNNING)
 
+  // Relationships
   showtimes   Showtime[]
+  favoritedBy User[]      @relation("UserFavorites") // Links back to User
 
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -44,4 +71,3 @@ model Showtime {
   @@index([movieId])
   @@index([startsAt])
 }
-

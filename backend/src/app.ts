@@ -4,6 +4,8 @@ import helmet from "helmet";
 import morgan from "morgan";
 
 import { moviesRouter } from "./routes/movies";
+import favoritesRouter from "./routes/favorites";
+import authRouter from "./routes/auth"; // For Registration/Login
 
 export function createApp(opts: { corsOrigin?: string | undefined }) {
   const app = express();
@@ -24,13 +26,16 @@ export function createApp(opts: { corsOrigin?: string | undefined }) {
     res.json({ ok: true });
   });
 
+  // Route Handlers
   app.use("/api/movies", moviesRouter);
+  app.use("/api/users", favoritesRouter);
+  app.use("/api/auth", authRouter); // Handles /api/auth/register
 
   app.use((req, res) => {
     res.status(404).json({ error: "Not found", path: req.path });
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // Error Handler
   app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     const message = err instanceof Error ? err.message : "Unknown error";
     res.status(500).json({ error: "Internal server error", message });
@@ -38,4 +43,3 @@ export function createApp(opts: { corsOrigin?: string | undefined }) {
 
   return app;
 }
-

@@ -1,8 +1,9 @@
 import "dotenv/config";
 
-import { MovieStatus } from "@prisma/client";
+import { AccountStatus, MovieStatus, UserRole } from "@prisma/client";
 
 import { prisma } from "../src/db";
+import { hashPassword } from "../src/lib/password";
 
 function daysFromNow(days: number, hour: number, minute: number) {
   const d = new Date();
@@ -12,6 +13,12 @@ function daysFromNow(days: number, hour: number, minute: number) {
 }
 
 async function main() {
+  await prisma.userFavorite.deleteMany();
+  await prisma.paymentCard.deleteMany();
+  await prisma.userAddress.deleteMany();
+  await prisma.pendingEmailVerification.deleteMany();
+  await prisma.pendingPasswordReset.deleteMany();
+  await prisma.user.deleteMany();
   await prisma.showtime.deleteMany();
   await prisma.movie.deleteMany();
 
@@ -124,6 +131,20 @@ async function main() {
     // eslint-disable-next-line no-console
     console.log(`Seeded movie: ${created.title}`);
   }
+
+  const adminHash = await hashPassword("Admin123!");
+  const admin = await prisma.user.create({
+    data: {
+      email: "admin@ces.local",
+      passwordHash: adminHash,
+      firstName: "Site",
+      lastName: "Admin",
+      role: UserRole.ADMIN,
+      status: AccountStatus.ACTIVE
+    }
+  });
+  // eslint-disable-next-line no-console
+  console.log(`Seeded admin user: ${admin.email} (password: Admin123!)`);
 }
 
 main()

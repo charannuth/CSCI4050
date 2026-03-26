@@ -12,6 +12,112 @@ enum MovieStatus {
   COMING_SOON
 }
 
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+enum AccountStatus {
+  INACTIVE
+  ACTIVE
+}
+
+model User {
+  id                      String         @id @default(cuid())
+  email                   String         @unique
+  passwordHash            String
+  firstName               String
+  lastName                String
+  phone                   String?
+  role                    UserRole       @default(CUSTOMER)
+  status                  AccountStatus  @default(INACTIVE)
+  tokenVersion            Int            @default(0)
+
+  /// Present only while email confirmation is pending (`token` + `expiresAt` always both set).
+  pendingEmailVerification PendingEmailVerification?
+  /// Present only while a password reset is pending (`token` + `expiresAt` always both set).
+  pendingPasswordReset     PendingPasswordReset?
+
+  address                 UserAddress?
+  paymentCards            PaymentCard[]
+  favoriteMovies          UserFavorite[]
+
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+
+  @@index([email])
+  @@index([status])
+}
+
+/// One row per user while signup email confirmation is outstanding.
+model PendingEmailVerification {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+
+  @@index([token])
+}
+
+/// One row per user while a password-reset link is outstanding.
+model PendingPasswordReset {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+
+  @@index([token])
+}
+
+/// At most one row per user (enforced in API + unique on userId).
+model UserAddress {
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  line1      String
+  line2      String?
+  city       String
+  state      String
+  postalCode String
+  country    String   @default("US")
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+/// Encrypted primary account number stored in `encryptedPan`; display via `last4`.
+model PaymentCard {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  nickname      String?
+  last4         String
+  encryptedPan  String
+  expiryMonth   Int
+  expiryYear    Int
+  cardholderName String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model UserFavorite {
+  userId  String
+  movieId String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  movie   Movie  @relation(fields: [movieId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@id([userId, movieId])
+  @@index([userId])
+  @@index([movieId])
+}
+
 model Movie {
   id          String      @id @default(cuid())
   title       String      @unique
@@ -23,6 +129,7 @@ model Movie {
   status      MovieStatus @default(CURRENTLY_RUNNING)
 
   showtimes   Showtime[]
+  favoritedBy UserFavorite[]
 
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt

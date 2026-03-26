@@ -13,6 +13,7 @@ async function request(path, options = {}) {
   const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT)
   const res = await fetch(url, {
     signal: controller.signal,
+    credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...options.headers },
     ...options,
   })

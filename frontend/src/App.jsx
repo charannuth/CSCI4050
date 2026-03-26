@@ -4,7 +4,8 @@ import Home from "./Home.jsx";
 import BookingPrototype from "./components/BookingPrototype.jsx";
 import MovieTrailerPage from "./components/MovieTrailerPage.jsx";
 import Registration from "./pages/Registration.jsx"; 
-import Login from "./pages/Login.jsx"; 
+import Login from "./pages/Login.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx"; 
 
 function App() {
   const [selectedMovie, setSelectedMovie] = useState(null);
@@ -95,12 +96,18 @@ function App() {
 
       </div>
 
-      <Home 
-        onSelectMovie={setSelectedMovie} 
-        onViewTrailer={setTrailerMovie} 
-        currentUser={currentUser} 
-        onUpdateFavorites={handleUpdateUserFavorites} // <-- ADDED THIS PROP
-      />
+      {/* --- ROLE BASED ROUTING IS ADDED HERE --- */}
+      {currentUser?.role === "ADMIN" ? (
+        <AdminDashboard currentUser={currentUser} />
+      ) : (
+        <Home 
+          onSelectMovie={setSelectedMovie} 
+          onViewTrailer={setTrailerMovie} 
+          currentUser={currentUser} 
+          onUpdateFavorites={handleUpdateUserFavorites} 
+        />
+      )}
+      
     </div>
   );
 }

@@ -1,40 +1,57 @@
 import { useEffect, useState } from "react";
 import { getMoviesHome, getMovies, getMoviesMeta } from "./api";
 
-function MovieCard({ movie, onSelectMovie, onViewTrailer }) {
-  // NOTE: If your backend eventually sends down whether a movie is already a favorite, 
-  // you can change this to: useState(movie.isFavorite || false)
+// 1. ADDED onUpdateFavorites to the props
+function MovieCard({ movie, onSelectMovie, onViewTrailer, currentUser, onUpdateFavorites }) {
   const [isFavorite, setIsFavorite] = useState(false);
 
+  // 2. THE MEMORY CURE: Check the database on load to see if it should be red
+  useEffect(() => {
+    if (currentUser && currentUser.favoriteMovies) {
+      const alreadySaved = currentUser.favoriteMovies.some((favMovie) => favMovie.id === movie.id);
+      setIsFavorite(alreadySaved);
+    } else {
+      setIsFavorite(false);
+    }
+  }, [currentUser, movie.id]);
+
   const handleFavoriteClick = async (e) => {
-    e.stopPropagation(); // Stops the card from being clicked when they hit the heart
+    e.stopPropagation(); 
+
+    if (!currentUser) {
+      alert("Please log in to save movies to your favorites!");
+      return;
+    }
 
     const currentFavStatus = isFavorite;
 
-    // 1. Optimistic UI Update: Instantly change the heart color for the user
+    // Optimistic UI Update
     setIsFavorite(!currentFavStatus);
 
-    // 2. The API Call to your Backend
     try {
-      // TODO: Update this URL to match your team's actual backend route!
-      const response = await fetch("http://localhost:8080/api/users/favorites", {
+      const response = await fetch("http://localhost:3002/api/users/favorites", {
         method: currentFavStatus ? "DELETE" : "POST",
         headers: {
           "Content-Type": "application/json",
-          // Uncomment the line below if your team is using authentication tokens!
-          // "Authorization": `Bearer ${localStorage.getItem("token")}` 
         },
-        body: JSON.stringify({ movieId: movie.id })
+        body: JSON.stringify({ 
+          movieId: movie.id,
+          userId: currentUser.id 
+        })
       });
 
       if (!response.ok) {
         throw new Error("Server failed to save favorite");
       }
+
+      // 3. THE SYNC CURE: Get the updated list from the backend and send it to App.tsx
+      const data = await response.json();
+      if (onUpdateFavorites && data.favorites) {
+        onUpdateFavorites(data.favorites);
+      }
       
     } catch (error) {
       console.error("Error updating favorites:", error);
-      
-      // 3. Error Handling: Revert the heart back to its original state if the server fails
       setIsFavorite(currentFavStatus);
       alert("Uh oh! We couldn't save that to your favorites. Please check your connection.");
     }
@@ -48,13 +65,13 @@ function MovieCard({ movie, onSelectMovie, onViewTrailer }) {
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === "Enter" && onViewTrailer?.(movie)}
-        style={{ position: "relative" }} // Guarantees the absolute heart stays inside the poster
+        style={{ position: "relative" }} 
       >
         
-        {/* --- ADDED: Favorites Heart Icon & API Logic (Requirement 4) --- */}
+        {/* Favorites Heart Icon */}
         <button
           onClick={handleFavoriteClick}
-          title={isFavorite ? "Remove from Favorites" : "Add to Favorites"} // Required tooltip
+          title={isFavorite ? "Remove from Favorites" : "Add to Favorites"} 
           style={{
             position: "absolute",
             top: "10px",
@@ -72,7 +89,7 @@ function MovieCard({ movie, onSelectMovie, onViewTrailer }) {
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            fill={isFavorite ? "#ef4444" : "none"} // Fills red if clicked
+            fill={isFavorite ? "#ef4444" : "none"} 
             viewBox="0 0 24 24"
             strokeWidth={2}
             stroke={isFavorite ? "#ef4444" : "white"}
@@ -85,7 +102,6 @@ function MovieCard({ movie, onSelectMovie, onViewTrailer }) {
             />
           </svg>
         </button>
-        {/* --------------------------------------------------- */}
 
         <img
           src={movie.posterUrl}
@@ -112,7 +128,8 @@ function MovieCard({ movie, onSelectMovie, onViewTrailer }) {
   );
 }
 
-function MovieSection({ title, movies, onSelectMovie, onViewTrailer }) {
+// 4. Pass the new prop down the chain
+function MovieSection({ title, movies, onSelectMovie, onViewTrailer, currentUser, onUpdateFavorites }) {
   return (
     <section className="movie-section">
       <h2>{title}</h2>
@@ -123,6 +140,8 @@ function MovieSection({ title, movies, onSelectMovie, onViewTrailer }) {
             movie={movie}
             onSelectMovie={onSelectMovie}
             onViewTrailer={onViewTrailer}
+            currentUser={currentUser} 
+            onUpdateFavorites={onUpdateFavorites} // <-- Passed to Card
           />
         ))}
       </div>
@@ -130,13 +149,13 @@ function MovieSection({ title, movies, onSelectMovie, onViewTrailer }) {
   );
 }
 
-export default function Home({ onSelectMovie, onViewTrailer }) {
+// 5. Accept the new prop from App.tsx
+export default function Home({ onSelectMovie, onViewTrailer, currentUser, onUpdateFavorites }) {
   const [currentlyRunning, setCurrentlyRunning] = useState([]);
   const [comingSoon, setComingSoon] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // search filter consts
   const [searchText, setSearchText] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
   const [filteredMovies, setFilteredMovies] = useState([]);
@@ -228,6 +247,8 @@ export default function Home({ onSelectMovie, onViewTrailer }) {
               movies={filteredMovies}
               onSelectMovie={onSelectMovie}
               onViewTrailer={onViewTrailer}
+              currentUser={currentUser} 
+              onUpdateFavorites={onUpdateFavorites} // <-- Passed to Section
             />
           ) : (
             <div className="page-message">No movies found.</div>
@@ -239,12 +260,16 @@ export default function Home({ onSelectMovie, onViewTrailer }) {
             movies={currentlyRunning}
             onSelectMovie={onSelectMovie}
             onViewTrailer={onViewTrailer}
+            currentUser={currentUser} 
+            onUpdateFavorites={onUpdateFavorites} // <-- Passed to Section
           />
           <MovieSection
             title="Coming Soon"
             movies={comingSoon}
             onSelectMovie={onSelectMovie}
             onViewTrailer={onViewTrailer}
+            currentUser={currentUser} 
+            onUpdateFavorites={onUpdateFavorites} // <-- Passed to Section
           />
         </>
       )}

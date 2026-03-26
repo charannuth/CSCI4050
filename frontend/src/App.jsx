@@ -3,27 +3,43 @@ import { useState } from "react";
 import Home from "./Home.jsx";
 import BookingPrototype from "./components/BookingPrototype.jsx";
 import MovieTrailerPage from "./components/MovieTrailerPage.jsx";
-// 1. Import your new Registration component
 import Registration from "./pages/Registration.jsx"; 
+import Login from "./pages/Login.jsx"; 
 
 function App() {
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [trailerMovie, setTrailerMovie] = useState(null);
   
-  // 2. Add state to track if the user is on the Registration page
   const [showRegistration, setShowRegistration] = useState(false);
+  const [showLogin, setShowLogin] = useState(false); 
+  const [currentUser, setCurrentUser] = useState(null);
 
-  // 3. Render Registration if the state is true
+  const handleLoginSuccess = (user) => {
+    setCurrentUser(user);
+    setShowLogin(false); 
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+  };
+
+  // --- ADDED THIS FUNCTION ---
+  // This allows the Home page to update the user's favorites without losing them!
+  const handleUpdateUserFavorites = (newFavoritesList) => {
+    if (currentUser) {
+      setCurrentUser({
+        ...currentUser,
+        favoriteMovies: newFavoritesList
+      });
+    }
+  };
+  // ---------------------------
+
   if (showRegistration) {
     return (
       <div style={{ background: "#111827", minHeight: "100vh", color: "white" }}>
-        {/* A simple navigation bar to let them go back home */}
         <div style={{ padding: "20px" }}>
-          <button 
-            className="movie-button" 
-            onClick={() => setShowRegistration(false)}
-            style={{ padding: "8px 16px", cursor: "pointer" }}
-          >
+          <button className="movie-button" onClick={() => setShowRegistration(false)} style={{ padding: "8px 16px", cursor: "pointer" }}>
             ← Back to Home
           </button>
         </div>
@@ -32,42 +48,58 @@ function App() {
     );
   }
 
-  // Your existing logic for Trailers and Booking
-  if (trailerMovie) {
+  if (showLogin) {
     return (
-      <MovieTrailerPage
-        movie={trailerMovie}
-        goBack={() => setTrailerMovie(null)}
-      />
+      <div style={{ background: "#111827", minHeight: "100vh", color: "white" }}>
+        <div style={{ padding: "20px" }}>
+          <button className="movie-button" onClick={() => setShowLogin(false)} style={{ padding: "8px 16px", cursor: "pointer" }}>
+            ← Back to Home
+          </button>
+        </div>
+        <Login onLoginSuccess={handleLoginSuccess} />
+      </div>
     );
+  }
+
+  if (trailerMovie) {
+    return <MovieTrailerPage movie={trailerMovie} goBack={() => setTrailerMovie(null)} />;
   }
 
   if (selectedMovie) {
-    return (
-      <BookingPrototype
-        movie={selectedMovie}
-        goBack={() => setSelectedMovie(null)}
-      />
-    );
+    return <BookingPrototype movie={selectedMovie} goBack={() => setSelectedMovie(null)} />;
   }
 
-  // 4. Update the Home view to include a "Register" button at the top
   return (
     <div style={{ background: "#111827", minHeight: "100vh" }}>
-      {/* Temporary Navbar so you can actually click to the Registration page */}
-      <div style={{ padding: "20px", display: "flex", justifyContent: "flex-end" }}>
-        <button 
-          className="movie-button"
-          onClick={() => setShowRegistration(true)}
-          style={{ padding: "10px 20px", cursor: "pointer", fontWeight: "bold" }}
-        >
-          Create Account
-        </button>
+      <div style={{ padding: "20px", display: "flex", justifyContent: "flex-end", gap: "10px", alignItems: "center" }}>
+        
+        {currentUser ? (
+          <>
+            <span style={{ color: "white", marginRight: "10px" }}>
+              Welcome, {currentUser.firstName}!
+            </span>
+            <button className="movie-button" onClick={handleLogout} style={{ padding: "10px 20px", cursor: "pointer", fontWeight: "bold", background: "#4b5563" }}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="movie-button" onClick={() => setShowLogin(true)} style={{ padding: "10px 20px", cursor: "pointer", fontWeight: "bold", background: "#2563eb" }}>
+              Login
+            </button>
+            <button className="movie-button" onClick={() => setShowRegistration(true)} style={{ padding: "10px 20px", cursor: "pointer", fontWeight: "bold" }}>
+              Create Account
+            </button>
+          </>
+        )}
+
       </div>
 
-      <Home
-        onSelectMovie={setSelectedMovie}
-        onViewTrailer={setTrailerMovie}
+      <Home 
+        onSelectMovie={setSelectedMovie} 
+        onViewTrailer={setTrailerMovie} 
+        currentUser={currentUser} 
+        onUpdateFavorites={handleUpdateUserFavorites} // <-- ADDED THIS PROP
       />
     </div>
   );

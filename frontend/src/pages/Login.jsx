@@ -15,7 +15,6 @@ export default function Login({ onLoginSuccess }) {
     setIsLoading(true);
 
     try {
-      // Make sure the port matches your backend (adjust 8080 if needed)
       const response = await fetch("http://localhost:3002/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

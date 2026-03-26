@@ -10,21 +10,22 @@ const prisma = new PrismaClient();
  */
 router.post('/favorites', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { movieId } = req.body;
-    
-    // TEMPORARY: Replace this string with a real ID from your User table after registering!
-    const userId = "placeholder-user-id"; 
+    const { movieId, userId } = req.body; 
 
-    if (!movieId) {
-      res.status(400).json({ error: "Movie ID is required" });
+    console.log("---- INCOMING FAVORITE REQUEST ----");
+    console.log("Received Movie ID:", movieId);
+    console.log("Received User ID:", userId);
+
+    if (!movieId || !userId) {
+      res.status(400).json({ error: "Movie ID and User ID are required" });
       return;
     }
-
+    
     const updatedUser = await prisma.user.update({
-      where: { id: userId },
+      where: { id: userId }, // Uses the real ID of the logged-in user
       data: {
         favoriteMovies: {
-          connect: { id: movieId } // No Number() wrapper needed for cuid Strings
+          connect: { id: movieId } 
         }
       },
       include: { favoriteMovies: true }
@@ -47,16 +48,17 @@ router.post('/favorites', async (req: Request, res: Response): Promise<void> => 
  */
 router.delete('/favorites', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { movieId } = req.body;
-    const userId = "placeholder-user-id"; 
+    // 1. Extract BOTH movieId and userId from the frontend request
+    const { movieId, userId } = req.body;
 
-    if (!movieId) {
-      res.status(400).json({ error: "Movie ID is required" });
+    // 2. Make sure both IDs were actually sent
+    if (!movieId || !userId) {
+      res.status(400).json({ error: "Movie ID and User ID are required" });
       return;
     }
 
     const updatedUser = await prisma.user.update({
-      where: { id: userId },
+      where: { id: userId }, // Uses the real ID of the logged-in user
       data: {
         favoriteMovies: {
           disconnect: { id: movieId }

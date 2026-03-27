@@ -30,6 +30,14 @@ export default function AdminDashboard({ currentUser }) {
             Manage Promos
           </button>
         </div>
+
+        <div className="bg-gray-900 p-8 rounded-lg shadow-lg border border-gray-800">
+          <h3 className="text-xl font-bold mb-3 text-white">Showtimes</h3>
+          <p className="text-sm text-gray-400 mb-4">Update screening schedules and maintain auditorium availability windows.</p>
+          <button className="w-full py-2 bg-gray-700 hover:bg-gray-600 rounded transition-colors font-bold">
+            Manage Showtimes
+          </button>
+        </div>
       </div>
     </div>
   );

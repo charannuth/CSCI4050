@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getMoviesHome, getMovies, getMoviesMeta } from "./api";
+import { addFavorite, getMoviesHome, getMovies, getMoviesMeta, removeFavorite } from "./api";
 
 // 1. ADDED onUpdateFavorites to the props
 function MovieCard({ movie, onSelectMovie, onViewTrailer, currentUser, onUpdateFavorites }) {
@@ -29,23 +29,7 @@ function MovieCard({ movie, onSelectMovie, onViewTrailer, currentUser, onUpdateF
     setIsFavorite(!currentFavStatus);
 
     try {
-      const response = await fetch("http://localhost:3002/api/users/favorites", {
-        method: currentFavStatus ? "DELETE" : "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          movieId: movie.id,
-          userId: currentUser.id 
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error("Server failed to save favorite");
-      }
-
-      // 3. THE SYNC CURE: Get the updated list from the backend and send it to App.tsx
-      const data = await response.json();
+      const data = currentFavStatus ? await removeFavorite(movie.id) : await addFavorite(movie.id);
       if (onUpdateFavorites && data.favorites) {
         onUpdateFavorites(data.favorites);
       }

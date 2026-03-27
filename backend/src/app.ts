@@ -2,10 +2,11 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
+import { ZodError } from "zod";
 
 import { moviesRouter } from "./routes/movies";
-import favoritesRouter from "./routes/favorites";
 import authRouter from "./routes/auth"; // For Registration/Login
+import usersRouter from "./routes/users";
 
 export function createApp(opts: { corsOrigin?: string | undefined }) {
   const app = express();
@@ -28,8 +29,8 @@ export function createApp(opts: { corsOrigin?: string | undefined }) {
 
   // Route Handlers
   app.use("/api/movies", moviesRouter);
-  app.use("/api/users", favoritesRouter);
-  app.use("/api/auth", authRouter); // Handles /api/auth/register
+  app.use("/api/auth", authRouter);
+  app.use("/api/users", usersRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: "Not found", path: req.path });
@@ -37,6 +38,10 @@ export function createApp(opts: { corsOrigin?: string | undefined }) {
 
   // Error Handler
   app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    if (err instanceof ZodError) {
+      res.status(400).json({ error: "Invalid request payload", details: err.flatten() });
+      return;
+    }
     const message = err instanceof Error ? err.message : "Unknown error";
     res.status(500).json({ error: "Internal server error", message });
   });

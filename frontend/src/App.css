@@ -13,6 +13,258 @@ body {
   width: 100%;
 }
 
+.app-shell {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #0b1f14 0%, #123524 36%, #1b4d33 68%, #2a6a45 100%);
+}
+
+.app-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 120;
+  height: 72px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: linear-gradient(90deg, #0f2a1b 0%, #17462d 48%, #1f5c3a 100%);
+  border-bottom: 1px solid rgba(134, 239, 172, 0.25);
+  box-shadow: 0 8px 20px rgba(5, 20, 12, 0.35);
+}
+
+.app-brand {
+  border: none;
+  background: transparent;
+  color: #f8fafc;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+}
+
+.app-brand:hover {
+  color: #facc15;
+}
+
+.app-navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-nav-btn {
+  border: none;
+  border-radius: 8px;
+  padding: 9px 14px;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.app-nav-btn-login {
+  background: #2563eb;
+}
+
+.app-nav-btn-login:hover {
+  background: #1d4ed8;
+}
+
+.app-nav-btn-register {
+  background: #b91c1c;
+}
+
+.app-nav-btn-register:hover {
+  background: #991b1b;
+}
+
+.app-nav-btn-profile {
+  background: #0f766e;
+}
+
+.app-nav-btn-profile:hover {
+  background: #0d5f58;
+}
+
+.app-nav-btn-logout {
+  background: #4b5563;
+}
+
+.app-nav-btn-logout:hover {
+  background: #374151;
+}
+
+.app-user-menu-anchor {
+  position: relative;
+  z-index: 140;
+}
+
+.app-avatar-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 2px solid rgba(134, 239, 172, 0.7);
+  background: radial-gradient(circle at 30% 30%, #34d399 0%, #0f766e 62%, #14532d 100%);
+  color: #ecfeff;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(5, 20, 12, 0.4);
+}
+
+.app-avatar-btn:hover {
+  filter: brightness(1.06);
+}
+
+.app-menu-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 110;
+  border: none;
+  width: 100%;
+  height: 100%;
+  background: rgba(1, 8, 5, 0.45);
+  backdrop-filter: blur(1px);
+  animation: appFadeIn 180ms ease-out;
+}
+
+.app-transition-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 210;
+  background: rgba(7, 18, 11, 0.5);
+  backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.app-transition-loader {
+  width: 52px;
+  height: 52px;
+  border: 5px solid rgba(251, 243, 191, 0.35);
+  border-top-color: #fbbf24;
+  border-radius: 50%;
+  animation: appSpin 900ms linear infinite;
+}
+
+.app-transition-text {
+  color: #fef3c7;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+}
+
+.app-logout-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 230;
+  background: rgba(1, 8, 5, 0.55);
+  backdrop-filter: blur(2px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+
+.app-logout-loader {
+  width: 52px;
+  height: 52px;
+  border: 5px solid rgba(236, 253, 245, 0.3);
+  border-top-color: #34d399;
+  border-radius: 50%;
+  animation: appSpin 900ms linear infinite;
+}
+
+.app-logout-text {
+  color: #ecfeff;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+}
+
+.app-user-menu {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  z-index: 150;
+  width: 220px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(134, 239, 172, 0.25);
+  background: linear-gradient(180deg, #0f2a1b 0%, #123524 100%);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: appMenuPop 180ms ease-out;
+}
+
+.app-user-menu-welcome {
+  color: #d1fae5;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 6px 8px 10px;
+  border-bottom: 1px solid rgba(134, 239, 172, 0.2);
+}
+
+.app-user-menu-item {
+  border: none;
+  border-radius: 8px;
+  text-align: left;
+  padding: 10px 10px;
+  cursor: pointer;
+  color: #ecfeff;
+  background: rgba(15, 118, 110, 0.35);
+  font-weight: 700;
+}
+
+.app-user-menu-item:hover {
+  background: rgba(45, 212, 191, 0.35);
+}
+
+.app-user-menu-item-danger {
+  background: rgba(185, 28, 28, 0.55);
+}
+
+.app-user-menu-item-danger:hover {
+  background: rgba(220, 38, 38, 0.7);
+}
+
+@keyframes appFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes appMenuPop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes appSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .home-page,
 .checkout-page {
   padding: 24px;
@@ -24,12 +276,25 @@ body {
 
 .home-header h1 {
   margin: 0 0 8px 0;
-  font-size: 30px;
+  font-size: 40px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  line-height: 1.1;
+  font-family: "Trebuchet MS", "Segoe UI", "Gill Sans", Arial, sans-serif;
+  background: linear-gradient(90deg, #f43f5e 0%, #f97316 45%, #facc15 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 2px 10px rgba(249, 115, 22, 0.2);
 }
 
 .home-header p {
   margin: 0;
-  color: #555;
+  color: #93c5fd;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
 }
 
 .filters-placeholder {
@@ -60,6 +325,18 @@ body {
   border-radius: 8px;
   border: 1px solid #ccc;
   font-size: 14px;
+  color: #93c5fd;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+  background-color: #0f172a;
+}
+
+.filters-container input::placeholder {
+  color: #93c5fd;
+  opacity: 0.9;
+  font-weight: 600;
+  font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
 }
 
 .filters-container button {
@@ -83,6 +360,10 @@ body {
 .movie-section h2 {
   margin-bottom: 14px;
   font-size: 22px;
+  color: #93c5fd;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
 }
 
 .movie-row {
@@ -100,6 +381,8 @@ body {
   border-radius: 8px;
   overflow: hidden;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .movie-poster-wrapper {
@@ -122,17 +405,27 @@ body {
 .movie-info {
   padding: 14px;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background: linear-gradient(180deg, #f4dfb8 0%, #e9cfa2 100%);
+  color: #3f2c18;
+  font-family: "Trebuchet MS", "Comic Sans MS", "Segoe UI", Arial, sans-serif;
 }
 
 .movie-info h3 {
   margin: 0 0 8px 0;
   font-size: 19px;
+  color: #6b2f1c;
+  font-weight: 800;
+  letter-spacing: 0.2px;
 }
 
 .movie-meta {
   margin: 0 0 10px 0;
   font-size: 14px;
-  color: #666;
+  color: #7a4f2b;
+  font-weight: 700;
 }
 
 .movie-description {
@@ -141,6 +434,16 @@ body {
   line-height: 1.4;
   height: 78px;
   overflow: hidden;
+  color: #3f2c18;
+  font-weight: 600;
+}
+
+.movie-card .movie-button {
+  margin-top: auto;
+  align-self: flex-start;
+  font-family: "Trebuchet MS", "Comic Sans MS", "Segoe UI", Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.25px;
 }
 
 .movie-button,
@@ -162,6 +465,10 @@ body {
 .page-message {
   padding: 28px;
   font-size: 18px;
+  color: #93c5fd;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
 }
 
 .page-message.error {
@@ -455,13 +762,19 @@ body {
   margin: 0;
   font-size: 28px;
   text-align: left;
+  color: #93c5fd;
+  font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.25px;
 }
 
 .trailer-meta {
   display: flex;
   gap: 12px;
   font-size: 14px;
-  color: #666;
+  color: #93c5fd;
+  font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+  font-weight: 600;
 }
 
 .trailer-rating {
@@ -471,13 +784,18 @@ body {
 .trailer-synopsis h3 {
   margin: 0 0 10px 0;
   font-size: 18px;
+  color: #93c5fd;
+  font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+  font-weight: 700;
 }
 
 .trailer-synopsis p {
   margin: 0;
   line-height: 1.6;
   font-size: 15px;
-  color: #333;
+  color: #dbeafe;
+  font-family: "Trebuchet MS", "Segoe UI", Arial, sans-serif;
+  font-weight: 600;
 }
 
 .trailer-right {

@@ -1,14 +1,15 @@
 import { useState } from "react";
+import { register } from "../api";
 
 export default function Registration() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
+    phone: "",
     password: "",
     confirmPassword: "",
   });
-
   const [status, setStatus] = useState({ type: "", message: "" });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -37,38 +38,27 @@ export default function Registration() {
 
     // 2. API Call to your new backend route
     try {
-      const response = await fetch("http://localhost:3002/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          password: formData.password,
-        }),
+      await register({
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone || undefined,
+        password: formData.password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Registration failed");
-      }
-
-      // 3. Success! (Dr. Saleh requires the user to be INACTIVE initially)
+      // 3. Success
       setStatus({
         type: "success",
-        message: "Registration successful! Please check your email to activate your account.",
+        message: "Registration successful! You can now log in.",
       });
       
       // Clear the form
       setFormData({
-        firstName: "", lastName: "", email: "", password: "", confirmPassword: ""
+        firstName: "", lastName: "", email: "", phone: "", password: "", confirmPassword: ""
       });
 
     } catch (error) {
-      setStatus({ type: "error", message: error.message });
+      setStatus({ type: "error", message: error?.body?.error || error.message });
     } finally {
       setIsLoading(false);
     }
@@ -101,7 +91,7 @@ export default function Registration() {
           
           <div style={{ display: "flex", gap: "16px" }}>
             <div style={{ flex: 1 }}>
-              <label style={{ display: "block", color: "#9ca3af", marginBottom: "6px", fontSize: "14px" }}>First Name</label>
+              <label style={{ display: "block", color: "#9ca3af", marginBottom: "6px", fontSize: "14px" }}>First Name *</label>
               <input
                 type="text"
                 name="firstName"
@@ -112,7 +102,7 @@ export default function Registration() {
               />
             </div>
             <div style={{ flex: 1 }}>
-              <label style={{ display: "block", color: "#9ca3af", marginBottom: "6px", fontSize: "14px" }}>Last Name</label>
+              <label style={{ display: "block", color: "#9ca3af", marginBottom: "6px", fontSize: "14px" }}>Last Name *</label>
               <input
                 type="text"
                 name="lastName"
@@ -125,7 +115,7 @@ export default function Registration() {
           </div>
 
           <div>
-            <label style={{ display: "block", color: "#9ca3af", marginBottom: "6px", fontSize: "14px" }}>Email Address</label>
+            <label style={{ display: "block", color: "#9ca3af", marginBottom: "6px", fontSize: "14px" }}>Email Address *</label>
             <input
               type="email"
               name="email"
@@ -137,7 +127,18 @@ export default function Registration() {
           </div>
 
           <div>
-            <label style={{ display: "block", color: "#9ca3af", marginBottom: "6px", fontSize: "14px" }}>Password</label>
+            <label style={{ display: "block", color: "#9ca3af", marginBottom: "6px", fontSize: "14px" }}>Phone Number</label>
+            <input
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #374151", background: "#111827", color: "white" }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", color: "#9ca3af", marginBottom: "6px", fontSize: "14px" }}>Password *</label>
             <input
               type="password"
               name="password"
@@ -149,7 +150,7 @@ export default function Registration() {
           </div>
 
           <div>
-            <label style={{ display: "block", color: "#9ca3af", marginBottom: "6px", fontSize: "14px" }}>Confirm Password</label>
+            <label style={{ display: "block", color: "#9ca3af", marginBottom: "6px", fontSize: "14px" }}>Confirm Password *</label>
             <input
               type="password"
               name="confirmPassword"
@@ -170,6 +171,7 @@ export default function Registration() {
           </button>
           
         </form>
+
       </div>
     </div>
   );

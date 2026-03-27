@@ -1,6 +1,7 @@
 import "dotenv/config";
 
 import { MovieStatus } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 import { prisma } from "../src/db";
 
@@ -12,6 +13,11 @@ function daysFromNow(days: number, hour: number, minute: number) {
 }
 
 async function main() {
+  await prisma.pendingPasswordReset.deleteMany();
+  await prisma.pendingEmailVerification.deleteMany();
+  await prisma.paymentCard.deleteMany();
+  await prisma.userAddress.deleteMany();
+  await prisma.user.deleteMany();
   await prisma.showtime.deleteMany();
   await prisma.movie.deleteMany();
 
@@ -124,6 +130,23 @@ async function main() {
     // eslint-disable-next-line no-console
     console.log(`Seeded movie: ${created.title}`);
   }
+
+  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@ces.local";
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "Admin123!";
+  const password = await bcrypt.hash(adminPassword, 12);
+
+  await prisma.user.create({
+    data: {
+      email: adminEmail,
+      password,
+      firstName: "Admin",
+      lastName: "User",
+      role: "ADMIN",
+      status: "ACTIVE"
+    }
+  });
+  // eslint-disable-next-line no-console
+  console.log(`Seeded admin user: ${adminEmail} (password: ${adminPassword})`);
 }
 
 main()

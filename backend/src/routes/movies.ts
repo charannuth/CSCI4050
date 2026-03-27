@@ -3,6 +3,7 @@ import { Router } from "express";
 import { z } from "zod";
 
 import { prisma } from "../db";
+import { requireAdmin, requireAuth } from "../middleware/auth";
 
 export const moviesRouter = Router();
 
@@ -138,7 +139,7 @@ moviesRouter.get("/:id", async (req, res, next) => {
   }
 });
 
-moviesRouter.post("/", async (req, res, next) => {
+moviesRouter.post("/", requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const body = createMovieSchema.parse(req.body);
 
@@ -168,7 +169,7 @@ moviesRouter.post("/", async (req, res, next) => {
   }
 });
 
-moviesRouter.delete("/:id", async (req, res, next) => {
+moviesRouter.delete("/:id", requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const id = z.string().min(1).parse(req.params.id);
 

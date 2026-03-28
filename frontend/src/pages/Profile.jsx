@@ -71,7 +71,7 @@ export default function Profile({ onBack, onUserRefreshed }) {
       }
     }
     load();
-  }, [onUserRefreshed]);
+  }, []);
 
   const saveProfile = async (e) => {
     e.preventDefault();

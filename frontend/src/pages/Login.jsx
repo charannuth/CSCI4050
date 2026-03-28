@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { forgotPassword, login, resetPassword } from "../api";
 
-export default function Login({ onLoginSuccess }) {
+export default function Login({ onLoginSuccess, initialPasswordResetToken, onConsumedPasswordResetLink }) {
   const [mode, setMode] = useState("login");
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [forgotEmail, setForgotEmail] = useState("");
@@ -10,6 +10,13 @@ export default function Login({ onLoginSuccess }) {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [status, setStatus] = useState({ type: "", message: "" });
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!initialPasswordResetToken) return;
+    setMode("reset");
+    setResetToken(initialPasswordResetToken);
+    onConsumedPasswordResetLink?.();
+  }, [initialPasswordResetToken, onConsumedPasswordResetLink]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

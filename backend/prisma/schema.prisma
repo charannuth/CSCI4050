@@ -21,7 +21,7 @@ enum MovieStatus {
 model User {
   id             String   @id @default(cuid())
   email          String   @unique
-  password       String    // Will store the securely hashed password
+  password       String?    // Will store the securely hashed password
   firstName      String
   lastName       String
   phone          String?

@@ -9,5 +9,11 @@ const app = createApp({ corsOrigin: env.CORS_ORIGIN });
 app.listen(env.PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`Backend listening on http://localhost:${env.PORT}`);
+  if (env.MAIL_TRANSPORT === "console") {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[mail] MAIL_TRANSPORT=console — messages are only printed in this terminal, not delivered. Set MAIL_TRANSPORT=smtp and fill SMTP_* in .env to send real email (see backend/.env.example)."
+    );
+  }
 });
 

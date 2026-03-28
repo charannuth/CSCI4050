@@ -5,14 +5,17 @@ import { addFavorite, getMoviesHome, getMovies, getMoviesMeta, removeFavorite } 
 function MovieCard({ movie, onSelectMovie, onViewTrailer, currentUser, onUpdateFavorites }) {
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // 2. THE MEMORY CURE: Check the database on load to see if it should be red
+  // 2. Sync heart from server when user or movie changes (setState deferred avoids cascading-render lint)
   useEffect(() => {
-    if (currentUser && currentUser.favoriteMovies) {
-      const alreadySaved = currentUser.favoriteMovies.some((favMovie) => favMovie.id === movie.id);
-      setIsFavorite(alreadySaved);
-    } else {
-      setIsFavorite(false);
-    }
+    const id = window.requestAnimationFrame(() => {
+      if (currentUser && currentUser.favoriteMovies) {
+        const alreadySaved = currentUser.favoriteMovies.some((favMovie) => favMovie.id === movie.id);
+        setIsFavorite(alreadySaved);
+      } else {
+        setIsFavorite(false);
+      }
+    });
+    return () => window.cancelAnimationFrame(id);
   }, [currentUser, movie.id]);
 
   const handleFavoriteClick = async (e) => {
@@ -155,7 +158,7 @@ export default function Home({ onSelectMovie, onViewTrailer, currentUser, onUpda
 
         const meta = await getMoviesMeta();
         setGenres(meta.genres || []);
-      } catch (err) {
+      } catch {
         setError("Failed to load movies.");
       } finally {
         setLoading(false);
@@ -178,7 +181,7 @@ export default function Home({ onSelectMovie, onViewTrailer, currentUser, onUpda
 
       setFilteredMovies(data.movies || []);
       setIsFiltering(true);
-    } catch (err) {
+    } catch {
       setError("Search failed.");
     }
   }

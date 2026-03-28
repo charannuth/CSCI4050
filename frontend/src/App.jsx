@@ -1,5 +1,5 @@
 import "./App.css";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Home from "./Home.jsx";
 import BookingPrototype from "./components/BookingPrototype.jsx";
 import MovieTrailerPage from "./components/MovieTrailerPage.jsx";
@@ -7,7 +7,7 @@ import Registration from "./pages/Registration.jsx";
 import Login from "./pages/Login.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx"; 
 import Profile from "./pages/Profile.jsx";
-import { getMe, logout, setAuthToken } from "./api";
+import { getMe, logout, setAuthToken, verifyEmail } from "./api";
 
 function App() {
   const blueGradientBg = "linear-gradient(180deg, #0b1f14 0%, #123524 36%, #1b4d33 68%, #2a6a45 100%)";
@@ -15,12 +15,52 @@ function App() {
   const [trailerMovie, setTrailerMovie] = useState(null);
 
   const [showRegistration, setShowRegistration] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
+  const [showLogin, setShowLogin] = useState(() =>
+    typeof window !== "undefined" ? Boolean(new URLSearchParams(window.location.search).get("resetToken")) : false
+  );
   const [showProfile, setShowProfile] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isPageTransitioning, setIsPageTransitioning] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [authBanner, setAuthBanner] = useState(null);
+  const [initialPasswordResetToken, setInitialPasswordResetToken] = useState(() =>
+    typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("resetToken") : null
+  );
+
+  const handleConsumedPasswordResetLink = useCallback(() => {
+    setInitialPasswordResetToken(null);
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const verifyEmailToken = params.get("verifyEmailToken");
+    const resetToken = params.get("resetToken");
+
+    const stripFromUrl = (...keys) => {
+      keys.forEach((k) => params.delete(k));
+      const q = params.toString();
+      window.history.replaceState({}, "", `${window.location.pathname}${q ? `?${q}` : ""}${window.location.hash}`);
+    };
+
+    if (verifyEmailToken) {
+      stripFromUrl("verifyEmailToken");
+      (async () => {
+        try {
+          const data = await verifyEmail(verifyEmailToken);
+          setAuthBanner({ type: "success", message: data.message });
+        } catch (e) {
+          const msg =
+            typeof e?.body === "object" && e?.body?.error != null ? e.body.error : e.message;
+          setAuthBanner({ type: "error", message: msg });
+        }
+      })();
+    }
+
+    if (resetToken) {
+      stripFromUrl("resetToken");
+    }
+  }, []);
 
   useEffect(() => {
     async function restoreSession() {
@@ -164,7 +204,11 @@ function App() {
     if (showLogin) {
       return (
         <div style={{ background: blueGradientBg, minHeight: "calc(100vh - 72px)", color: "white" }}>
-          <Login onLoginSuccess={handleLoginSuccess} />
+          <Login
+            onLoginSuccess={handleLoginSuccess}
+            initialPasswordResetToken={initialPasswordResetToken}
+            onConsumedPasswordResetLink={handleConsumedPasswordResetLink}
+          />
         </div>
       );
     }
@@ -211,6 +255,34 @@ function App() {
 
   return (
     <div className="app-shell">
+      {authBanner && (
+        <div
+          role="alert"
+          style={{
+            padding: "12px 16px",
+            textAlign: "center",
+            background: authBanner.type === "error" ? "#fee2e2" : "#dcfce7",
+            color: authBanner.type === "error" ? "#991b1b" : "#166534",
+            borderBottom: `1px solid ${authBanner.type === "error" ? "#fecaca" : "#bbf7d0"}`,
+          }}
+        >
+          {authBanner.message}
+          <button
+            type="button"
+            onClick={() => setAuthBanner(null)}
+            style={{
+              marginLeft: "16px",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              textDecoration: "underline",
+              color: "inherit",
+            }}
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
       {isPageTransitioning && (
         <div className="app-transition-overlay" role="status" aria-live="polite">
           <div className="app-transition-loader" />

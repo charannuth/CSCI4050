@@ -1,23 +1,50 @@
 import nodemailer from "nodemailer";
 
-import { getApiPublicOrigin, getEnv } from "../env";
+import { getEnv } from "../env";
 
-function getTransport() {
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function normalizeAppPassword(pass: string): string {
+  return pass.replace(/\s+/g, "");
+}
+
+function getSmtpTransport() {
   const env = getEnv();
-  if (env.MAIL_TRANSPORT === "console") {
-    return null;
+  const hostRaw = env.SMTP_HOST?.trim() ?? "";
+  const user = env.SMTP_USER?.trim() ?? "";
+  const pass = normalizeAppPassword(env.SMTP_PASS != null ? String(env.SMTP_PASS) : "");
+  if (!hostRaw || !user || !pass) {
+    throw new Error(
+      "SMTP is misconfigured: set SMTP_HOST, SMTP_USER, and SMTP_PASS when MAIL_TRANSPORT=smtp"
+    );
   }
+
+  const host = hostRaw.toLowerCase();
+  const useGmailService = host === "smtp.gmail.com" || host.endsWith(".gmail.com");
+
+  if (useGmailService) {
+    return nodemailer.createTransport({
+      service: "gmail",
+      auth: { user, pass }
+    });
+  }
+
   return nodemailer.createTransport({
-    host: env.SMTP_HOST,
+    host: hostRaw,
     port: env.SMTP_PORT,
     secure: env.SMTP_SECURE,
-    auth:
-      env.SMTP_USER && env.SMTP_PASS
-        ? {
-            user: env.SMTP_USER,
-            pass: env.SMTP_PASS
-          }
-        : undefined
+    auth: { user, pass },
+    requireTLS: !env.SMTP_SECURE && env.SMTP_PORT === 587,
+    tls: {
+      minVersion: "TLSv1.2" as const
+    }
   });
 }
 
@@ -37,26 +64,54 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
     return;
   }
 
-  const transport = getTransport();
-  if (!transport) {
-    return;
+  const transport = getSmtpTransport();
+  try {
+    const info = await transport.sendMail({
+      from: env.MAIL_FROM,
+      to,
+      subject,
+      html
+    });
+    // eslint-disable-next-line no-console
+    console.log(`[mail] queued/sent: to=${to} subject="${subject}" messageId=${info.messageId ?? "n/a"}`);
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    throw new Error(
+      `Failed to send email via SMTP (${env.SMTP_HOST}:${env.SMTP_PORT}). ${detail} — check MAIL_TRANSPORT=smtp, Gmail App Password, and that MAIL_FROM matches your SMTP_USER address.`
+    );
   }
-  await transport.sendMail({
-    from: env.MAIL_FROM,
-    to,
-    subject,
-    html
-  });
 }
 
-export async function sendVerificationEmail(email: string, token: string): Promise<void> {
+export async function sendVerificationEmail(email: string, token: string, firstName: string): Promise<void> {
   const env = getEnv();
-  const verifyUrl = `${getApiPublicOrigin(env)}/api/auth/verify-email?token=${encodeURIComponent(token)}`;
-  await sendEmail(
-    email,
-    "Verify your Cinema E-Booking account",
-    `<p>Welcome to Cinema E-Booking.</p><p>Please verify your email to activate your account:</p><p><a href="${verifyUrl}">${verifyUrl}</a></p>`
-  );
+  const base = env.PUBLIC_APP_URL.replace(/\/$/, "");
+  const verifyUrl = `${base}/?verifyEmailToken=${encodeURIComponent(token)}`;
+  const safeName = escapeHtml(firstName);
+  const html = `<p>Hello ${safeName},</p><p>Thanks for registering. Please confirm your email address to activate your account:</p><p><a href="${verifyUrl}">Confirm my email</a></p><p>If the button does not work, copy this link into your browser:</p><p>${verifyUrl}</p>`;
+  const text = `Hello ${firstName},\n\nThanks for registering. Open this link to confirm your email:\n${verifyUrl}\n`;
+
+  if (env.MAIL_TRANSPORT === "console") {
+    await sendEmail(email, "Confirm your Cinema E-Booking account", html);
+    return;
+  }
+
+  const transport = getSmtpTransport();
+  try {
+    const info = await transport.sendMail({
+      from: env.MAIL_FROM,
+      to: email,
+      subject: "Confirm your Cinema E-Booking account",
+      text,
+      html
+    });
+    // eslint-disable-next-line no-console
+    console.log(`[mail] verification: to=${email} messageId=${info.messageId ?? "n/a"}`);
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
+    throw new Error(
+      `Failed to send email via SMTP (${env.SMTP_HOST}:${env.SMTP_PORT}). ${detail} — check MAIL_TRANSPORT=smtp, Gmail App Password, and that MAIL_FROM matches your SMTP_USER address.`
+    );
+  }
 }
 
 export async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
@@ -65,7 +120,7 @@ export async function sendPasswordResetEmail(email: string, token: string): Prom
   await sendEmail(
     email,
     "Reset your Cinema E-Booking password",
-    `<p>We received a password reset request for your account.</p><p>Use this reset token in the app: <strong>${token}</strong></p><p>or open <a href="${resetUrl}">${resetUrl}</a></p>`
+    `<p>We received a password reset request for your account.</p><p><a href="${resetUrl}">Set a new password</a> (opens the login page with your token).</p><p>This link expires in 30 minutes. If you did not request a reset, you can ignore this email.</p><p>Alternatively, open the app, choose &quot;Forgot my password&quot; → &quot;Already have reset token?&quot;, and paste this token:</p><p><strong>${token}</strong></p>`
   );
 }
 

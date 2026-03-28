@@ -29,8 +29,8 @@ export default function Registration() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setStatus({ type: "error", message: "Password must be at least 6 characters." });
+    if (formData.password.length < 8) {
+      setStatus({ type: "error", message: "Password must be at least 8 characters." });
       return;
     }
 
@@ -49,7 +49,7 @@ export default function Registration() {
       // 3. Success
       setStatus({
         type: "success",
-        message: "Registration successful! You can now log in.",
+        message: "Registration successful! Check your email to confirm your account, then log in.",
       });
       
       // Clear the form

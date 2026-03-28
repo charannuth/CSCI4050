@@ -49,7 +49,14 @@ async function request(path, options = {}) {
     }
     throw err
   }
-  return res.json()
+  if (res.status === 204) {
+    return null
+  }
+  const text = await res.text()
+  if (!text) {
+    return null
+  }
+  return JSON.parse(text)
 }
 
 /** GET /api/health */

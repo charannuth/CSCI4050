@@ -1,5 +1,5 @@
 import "./App.css";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Home from "./Home.jsx";
 import BookingPrototype from "./components/BookingPrototype.jsx";
 import MovieTrailerPage from "./components/MovieTrailerPage.jsx";
@@ -7,6 +7,7 @@ import Registration from "./pages/Registration.jsx";
 import Login from "./pages/Login.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx"; 
 import Profile from "./pages/Profile.jsx";
+import Favorites from "./pages/Favorites.jsx";
 import { getMe, logout, setAuthToken, verifyEmail } from "./api";
 
 function App() {
@@ -19,11 +20,14 @@ function App() {
     typeof window !== "undefined" ? Boolean(new URLSearchParams(window.location.search).get("resetToken")) : false
   );
   const [showProfile, setShowProfile] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isPageTransitioning, setIsPageTransitioning] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
   const [authBanner, setAuthBanner] = useState(null);
+  const transitionTimerRef = useRef(null);
+  const isLoggingOutRef = useRef(false);
   const [initialPasswordResetToken, setInitialPasswordResetToken] = useState(() =>
     typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("resetToken") : null
   );
@@ -82,12 +86,16 @@ function App() {
   }, []);
 
   const runPageTransition = (action) => {
-    if (isLoggingOut || isPageTransitioning) return;
+    if (isLoggingOutRef.current || isPageTransitioning) return;
     setShowUserMenu(false);
     setIsPageTransitioning(true);
-    window.setTimeout(() => {
+    if (transitionTimerRef.current) {
+      window.clearTimeout(transitionTimerRef.current);
+    }
+    transitionTimerRef.current = window.setTimeout(() => {
       action();
       setIsPageTransitioning(false);
+      transitionTimerRef.current = null;
     }, 1000);
   };
 
@@ -95,6 +103,7 @@ function App() {
     setShowRegistration(false);
     setShowLogin(false);
     setShowProfile(false);
+    setShowFavorites(false);
     setSelectedMovie(null);
     setTrailerMovie(null);
     setShowUserMenu(false);
@@ -109,8 +118,14 @@ function App() {
   };
 
   const handleLogout = async () => {
-    if (isLoggingOut) return;
+    if (isLoggingOutRef.current) return;
+    isLoggingOutRef.current = true;
     setIsLoggingOut(true);
+    if (transitionTimerRef.current) {
+      window.clearTimeout(transitionTimerRef.current);
+      transitionTimerRef.current = null;
+    }
+    setIsPageTransitioning(false);
     try {
       await Promise.all([
         logout(),
@@ -129,6 +144,7 @@ function App() {
     setTrailerMovie(null);
     setShowUserMenu(false);
     setIsLoggingOut(false);
+    isLoggingOutRef.current = false;
   };
 
   // --- ADDED THIS FUNCTION ---
@@ -160,6 +176,7 @@ function App() {
       setShowRegistration(false);
       setShowLogin(true);
       setShowProfile(false);
+      setShowFavorites(false);
       setSelectedMovie(null);
       setTrailerMovie(null);
       setShowUserMenu(false);
@@ -170,6 +187,7 @@ function App() {
       setShowRegistration(true);
       setShowLogin(false);
       setShowProfile(false);
+      setShowFavorites(false);
       setSelectedMovie(null);
       setTrailerMovie(null);
       setShowUserMenu(false);
@@ -179,6 +197,7 @@ function App() {
     if (!currentUser) return;
     runPageTransition(() => {
       setShowProfile(true);
+      setShowFavorites(false);
       setShowLogin(false);
       setShowRegistration(false);
       setSelectedMovie(null);
@@ -188,8 +207,16 @@ function App() {
   };
 
   const openFavorites = () => {
-    // Placeholder behavior until dedicated favorites view is added.
-    openHome();
+    if (!currentUser) return;
+    runPageTransition(() => {
+      setShowFavorites(true);
+      setShowProfile(false);
+      setShowLogin(false);
+      setShowRegistration(false);
+      setSelectedMovie(null);
+      setTrailerMovie(null);
+      setShowUserMenu(false);
+    });
   };
 
   const renderContent = () => {
@@ -219,11 +246,28 @@ function App() {
           <Profile
             onBack={() => runPageTransition(goHomeImmediate)}
             onUserRefreshed={(user, favoriteMovies) => {
+              if (isLoggingOutRef.current) {
+                return;
+              }
               setCurrentUser({
                 ...user,
                 favoriteMovies
               });
             }}
+          />
+        </div>
+      );
+    }
+
+    if (showFavorites && currentUser) {
+      return (
+        <div style={{ background: blueGradientBg, minHeight: "calc(100vh - 72px)" }}>
+          <Favorites
+            currentUser={currentUser}
+            onBack={openHome}
+            onSelectMovie={(movie) => runPageTransition(() => setSelectedMovie(movie))}
+            onViewTrailer={(movie) => runPageTransition(() => setTrailerMovie(movie))}
+            onUpdateFavorites={handleUpdateUserFavorites}
           />
         </div>
       );

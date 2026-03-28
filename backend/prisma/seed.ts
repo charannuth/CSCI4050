@@ -131,14 +131,14 @@ async function main() {
     console.log(`Seeded movie: ${created.title}`);
   }
 
-  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@ces.local";
+  const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@email.com";
   const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "Admin123!";
-  const password = await bcrypt.hash(adminPassword, 12);
+  const adminHash = await bcrypt.hash(adminPassword, 12);
 
   await prisma.user.create({
     data: {
       email: adminEmail,
-      password,
+      password: adminHash,
       firstName: "Admin",
       lastName: "User",
       role: "ADMIN",
@@ -147,6 +147,23 @@ async function main() {
   });
   // eslint-disable-next-line no-console
   console.log(`Seeded admin user: ${adminEmail} (password: ${adminPassword})`);
+
+  const verifiedEmail = process.env.SEED_VERIFIED_USER_EMAIL ?? "user@email.com";
+  const verifiedPassword = process.env.SEED_VERIFIED_USER_PASSWORD ?? "User123!";
+  const verifiedHash = await bcrypt.hash(verifiedPassword, 12);
+
+  await prisma.user.create({
+    data: {
+      email: verifiedEmail,
+      password: verifiedHash,
+      firstName: "Verified",
+      lastName: "Customer",
+      role: "CUSTOMER",
+      status: "ACTIVE"
+    }
+  });
+  // eslint-disable-next-line no-console
+  console.log(`Seeded verified user: ${verifiedEmail} (password: ${verifiedPassword})`);
 }
 
 main()

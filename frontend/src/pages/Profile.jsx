@@ -171,27 +171,27 @@ export default function Profile({ onBack, onUserRefreshed }) {
       <form onSubmit={saveProfile} style={{ background: "#fff", border: "1px solid #ddd", borderRadius: 8, padding: 16, marginBottom: 16 }}>
         <h3>Personal Information</h3>
         <label>Email (locked)</label>
-        <input value={user.email} disabled style={{ width: "100%", marginBottom: 12, padding: 8 }} />
+        <input className="profile-input" value={user.email} disabled style={{ marginBottom: 12 }} />
         <label>First Name *</label>
-        <input value={profileForm.firstName} onChange={(e) => setProfileForm((p) => ({ ...p, firstName: e.target.value }))} required style={{ width: "100%", marginBottom: 12, padding: 8 }} />
+        <input className="profile-input" placeholder="Enter info here..." value={profileForm.firstName} onChange={(e) => setProfileForm((p) => ({ ...p, firstName: e.target.value }))} required style={{ marginBottom: 12 }} />
         <label>Last Name *</label>
-        <input value={profileForm.lastName} onChange={(e) => setProfileForm((p) => ({ ...p, lastName: e.target.value }))} required style={{ width: "100%", marginBottom: 12, padding: 8 }} />
+        <input className="profile-input" placeholder="Enter info here..." value={profileForm.lastName} onChange={(e) => setProfileForm((p) => ({ ...p, lastName: e.target.value }))} required style={{ marginBottom: 12 }} />
         <label>Phone</label>
-        <input value={profileForm.phone} onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))} style={{ width: "100%", marginBottom: 12, padding: 8 }} />
+        <input className="profile-input" placeholder="Enter info here..." value={profileForm.phone} onChange={(e) => setProfileForm((p) => ({ ...p, phone: e.target.value }))} style={{ marginBottom: 12 }} />
 
         <h3>Address (one maximum)</h3>
         <label>Line 1 *</label>
-        <input value={address.line1} onChange={(e) => setAddress((a) => ({ ...a, line1: e.target.value }))} required style={{ width: "100%", marginBottom: 8, padding: 8 }} />
+        <input className="profile-input" placeholder="Enter info here..." value={address.line1} onChange={(e) => setAddress((a) => ({ ...a, line1: e.target.value }))} required />
         <label>Line 2</label>
-        <input value={address.line2} onChange={(e) => setAddress((a) => ({ ...a, line2: e.target.value }))} style={{ width: "100%", marginBottom: 8, padding: 8 }} />
+        <input className="profile-input" placeholder="Enter info here..." value={address.line2} onChange={(e) => setAddress((a) => ({ ...a, line2: e.target.value }))} />
         <label>City *</label>
-        <input value={address.city} onChange={(e) => setAddress((a) => ({ ...a, city: e.target.value }))} required style={{ width: "100%", marginBottom: 8, padding: 8 }} />
+        <input className="profile-input" placeholder="Enter info here..." value={address.city} onChange={(e) => setAddress((a) => ({ ...a, city: e.target.value }))} required />
         <label>State *</label>
-        <input value={address.state} onChange={(e) => setAddress((a) => ({ ...a, state: e.target.value }))} required style={{ width: "100%", marginBottom: 8, padding: 8 }} />
+        <input className="profile-input" placeholder="Enter info here..." value={address.state} onChange={(e) => setAddress((a) => ({ ...a, state: e.target.value }))} required />
         <label>Postal Code *</label>
-        <input value={address.postalCode} onChange={(e) => setAddress((a) => ({ ...a, postalCode: e.target.value }))} required style={{ width: "100%", marginBottom: 8, padding: 8 }} />
+        <input className="profile-input" placeholder="Enter info here..." value={address.postalCode} onChange={(e) => setAddress((a) => ({ ...a, postalCode: e.target.value }))} required />
         <label>Country *</label>
-        <input value={address.country} onChange={(e) => setAddress((a) => ({ ...a, country: e.target.value }))} required style={{ width: "100%", marginBottom: 12, padding: 8 }} />
+        <input className="profile-input" placeholder="Enter info here..." value={address.country} onChange={(e) => setAddress((a) => ({ ...a, country: e.target.value }))} required style={{ marginBottom: 12 }} />
         <button className="movie-button" type="submit">Save Profile</button>
       </form>
 
@@ -204,29 +204,47 @@ export default function Profile({ onBack, onUserRefreshed }) {
             <button type="button" className="movie-button" onClick={() => deleteCard(card.id)}>Remove</button>
           </div>
         ))}
-        <label>Cardholder Name *</label>
-        <input value={cardForm.cardholderName} onChange={(e) => setCardForm((c) => ({ ...c, cardholderName: e.target.value }))} required style={{ width: "100%", marginBottom: 8, padding: 8 }} />
-        <label>Card Number *</label>
-        <input value={cardForm.cardNumber} onChange={(e) => setCardForm((c) => ({ ...c, cardNumber: e.target.value }))} required style={{ width: "100%", marginBottom: 8, padding: 8 }} />
-        <label>Brand</label>
-        <input value={cardForm.brand} onChange={(e) => setCardForm((c) => ({ ...c, brand: e.target.value }))} style={{ width: "100%", marginBottom: 8, padding: 8 }} />
-        <label>Expires Month *</label>
-        <input type="number" value={cardForm.expiresMonth} onChange={(e) => setCardForm((c) => ({ ...c, expiresMonth: e.target.value }))} required style={{ width: "100%", marginBottom: 8, padding: 8 }} />
-        <label>Expires Year *</label>
-        <input type="number" value={cardForm.expiresYear} onChange={(e) => setCardForm((c) => ({ ...c, expiresYear: e.target.value }))} required style={{ width: "100%", marginBottom: 8, padding: 8 }} />
-        <label>CVV *</label>
-        <input value={cardForm.cvv} onChange={(e) => setCardForm((c) => ({ ...c, cvv: e.target.value }))} required style={{ width: "100%", marginBottom: 12, padding: 8 }} />
-        <button className="movie-button" type="submit" disabled={cards.length >= 3}>Add Card</button>
+        {cards.length >= 3 ? (
+          <div
+            style={{
+              marginTop: 12,
+              padding: 12,
+              borderRadius: 6,
+              background: "#f3f4f6",
+              border: "1px solid #d1d5db",
+              color: "#4b5563",
+              fontWeight: 600
+            }}
+          >
+            You already have 3 cards saved. Remove one card to add a new card.
+          </div>
+        ) : (
+          <>
+            <label>Cardholder Name *</label>
+            <input className="profile-input" placeholder="Enter info here..." value={cardForm.cardholderName} onChange={(e) => setCardForm((c) => ({ ...c, cardholderName: e.target.value }))} required />
+            <label>Card Number *</label>
+            <input className="profile-input" placeholder="Enter info here..." value={cardForm.cardNumber} onChange={(e) => setCardForm((c) => ({ ...c, cardNumber: e.target.value }))} required />
+            <label>Brand</label>
+            <input className="profile-input" placeholder="Enter info here..." value={cardForm.brand} onChange={(e) => setCardForm((c) => ({ ...c, brand: e.target.value }))} />
+            <label>Expires Month *</label>
+            <input className="profile-input" type="number" placeholder="Enter info here..." value={cardForm.expiresMonth} onChange={(e) => setCardForm((c) => ({ ...c, expiresMonth: e.target.value }))} required />
+            <label>Expires Year *</label>
+            <input className="profile-input" type="number" placeholder="Enter info here..." value={cardForm.expiresYear} onChange={(e) => setCardForm((c) => ({ ...c, expiresYear: e.target.value }))} required />
+            <label>CVV *</label>
+            <input className="profile-input" placeholder="Enter info here..." value={cardForm.cvv} onChange={(e) => setCardForm((c) => ({ ...c, cvv: e.target.value }))} required style={{ marginBottom: 12 }} />
+            <button className="movie-button" type="submit">Add Card</button>
+          </>
+        )}
       </form>
 
       <form onSubmit={submitPassword} style={{ background: "#fff", border: "1px solid #ddd", borderRadius: 8, padding: 16, marginBottom: 16 }}>
         <h3>Change Password</h3>
         <label>Current Password *</label>
-        <input type="password" value={passwordForm.currentPassword} onChange={(e) => setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))} required style={{ width: "100%", marginBottom: 8, padding: 8 }} />
+        <input className="profile-input" type="password" placeholder="Enter info here..." value={passwordForm.currentPassword} onChange={(e) => setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))} required />
         <label>New Password *</label>
-        <input type="password" value={passwordForm.newPassword} onChange={(e) => setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))} required style={{ width: "100%", marginBottom: 8, padding: 8 }} />
+        <input className="profile-input" type="password" placeholder="Enter info here..." value={passwordForm.newPassword} onChange={(e) => setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))} required />
         <label>Confirm New Password *</label>
-        <input type="password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm((p) => ({ ...p, confirmPassword: e.target.value }))} required style={{ width: "100%", marginBottom: 12, padding: 8 }} />
+        <input className="profile-input" type="password" placeholder="Enter info here..." value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm((p) => ({ ...p, confirmPassword: e.target.value }))} required style={{ marginBottom: 12 }} />
         <button className="movie-button" type="submit">Change Password</button>
       </form>
     </div>

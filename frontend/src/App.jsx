@@ -1,19 +1,20 @@
 import "./App.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Home from "./Home.jsx";
-import BookingPrototype from "./components/BookingPrototype.jsx";
 import MovieTrailerPage from "./components/MovieTrailerPage.jsx";
 import Registration from "./pages/Registration.jsx"; 
 import Login from "./pages/Login.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx"; 
 import Profile from "./pages/Profile.jsx";
 import Favorites from "./pages/Favorites.jsx";
+import BookingFlow from "./components/BookingFlow.jsx";
 import { getMe, logout, setAuthToken, verifyEmail } from "./api";
 
 function App() {
   const blueGradientBg = "linear-gradient(180deg, #0b1f14 0%, #123524 36%, #1b4d33 68%, #2a6a45 100%)";
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [trailerMovie, setTrailerMovie] = useState(null);
+  const [bookingShowtimeId, setBookingShowtimeId] = useState(null);
 
   const [showRegistration, setShowRegistration] = useState(false);
   const [showLogin, setShowLogin] = useState(() =>
@@ -272,13 +273,24 @@ function App() {
         </div>
       );
     }
-
-    if (trailerMovie) {
-      return <MovieTrailerPage movie={trailerMovie} goBack={() => runPageTransition(() => setTrailerMovie(null))} />;
+    
+    if (bookingShowtimeId) {
+      return (
+        <BookingFlow 
+          showtimeId={bookingShowtimeId} 
+          goBack={() => runPageTransition(() => setBookingShowtimeId(null))} 
+        />
+      );
     }
 
-    if (selectedMovie) {
-      return <BookingPrototype movie={selectedMovie} goBack={() => runPageTransition(() => setSelectedMovie(null))} />;
+    if (trailerMovie) {
+      return (
+        <MovieTrailerPage 
+          movie={trailerMovie} 
+          goBack={() => runPageTransition(() => setTrailerMovie(null))} 
+          onStartBooking={(showtimeId) => runPageTransition(() => setBookingShowtimeId(showtimeId))} // <-- MAGIC LINK
+        />
+      );
     }
 
     return (

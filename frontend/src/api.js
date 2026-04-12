@@ -173,3 +173,44 @@ export function removeFavorite(movieId) {
     method: 'DELETE',
   })
 }
+
+export function addMovie(payload) {
+  return request('/api/movies', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function getSchedulingData() {
+  return request('/api/movies/admin/scheduling-data')
+}
+
+export function addShowtime(movieId, payload) {
+  return request(`/api/movies/${movieId}/showtimes`, {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function getPromotions() {
+  return request('/api/promotions');
+}
+
+export function createPromotion(payload) {
+  return request('/api/promotions', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export function sendPromotionEmail(promoId) {
+  return request(`/api/promotions/${promoId}/send`, {
+    method: 'POST',
+  });
+}
+
+export function deletePromotion(promoId) {
+  return request(`/api/promotions/${promoId}`, {
+    method: 'DELETE',
+  });
+}

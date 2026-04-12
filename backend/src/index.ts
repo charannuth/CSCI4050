@@ -3,6 +3,8 @@ import "dotenv/config";
 import { createApp } from "./app";
 import { getEnv } from "./env";
 
+
+
 const env = getEnv();
 const app = createApp({ corsOrigin: env.CORS_ORIGIN });
 

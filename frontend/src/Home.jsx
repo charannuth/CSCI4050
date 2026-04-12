@@ -106,9 +106,9 @@ function MovieCard({ movie, onSelectMovie, onViewTrailer, currentUser, onUpdateF
 
         <button
           className="movie-button"
-          onClick={() => onSelectMovie(movie)}
+          onClick={() => onViewTrailer(movie)}
         >
-          Go to Checkout
+          Book Tickets
         </button>
       </div>
     </div>

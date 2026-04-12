@@ -7,6 +7,9 @@ import { requireAdmin, requireAuth } from "../middleware/auth";
 
 export const moviesRouter = Router();
 
+// ==========================================
+// SCHEMAS
+// ==========================================
 const createMovieSchema = z.object({
   title: z.string().min(1),
   rating: z.string().min(1).optional(),
@@ -15,13 +18,9 @@ const createMovieSchema = z.object({
   trailerUrl: z.string().url().optional(),
   genre: z.string().min(1),
   status: z.nativeEnum(MovieStatus).optional(),
-  showtimes: z
-    .array(
-      z.object({
-        startsAt: z.coerce.date()
-      })
-    )
-    .optional()
+  cast: z.string().min(1).optional(),
+  director: z.string().min(1).optional(),
+  producer: z.string().min(1).optional(),
 });
 
 const listQuerySchema = z.object({
@@ -33,6 +32,15 @@ const listQuerySchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .optional()
 });
+
+const scheduleSchema = z.object({
+  auditoriumId: z.string().min(1),
+  startsAt: z.coerce.date(),
+});
+
+// ==========================================
+// STATIC ROUTES (Must come first!)
+// ==========================================
 
 moviesRouter.get("/meta", async (_req, res, next) => {
   try {
@@ -52,7 +60,6 @@ moviesRouter.get("/meta", async (_req, res, next) => {
 
     const showDatesSet = new Set<string>();
     for (const s of showtimesRaw) {
-      // YYYY-MM-DD in UTC
       showDatesSet.add(s.startsAt.toISOString().slice(0, 10));
     }
 
@@ -85,10 +92,21 @@ moviesRouter.get("/home", async (_req, res, next) => {
   }
 });
 
+moviesRouter.get("/admin/scheduling-data", requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    const [movies, auditoriums] = await Promise.all([
+      prisma.movie.findMany({ select: { id: true, title: true }, orderBy: { title: 'asc' } }),
+      prisma.auditorium.findMany({ orderBy: { name: 'asc' } })
+    ]);
+    res.json({ movies, auditoriums });
+  } catch (err) {
+    next(err);
+  }
+});
+
 moviesRouter.get("/", async (req, res, next) => {
   try {
     const query = listQuerySchema.parse(req.query);
-
     const where: Prisma.MovieWhereInput = {};
 
     if (query.q?.trim()) {
@@ -119,6 +137,10 @@ moviesRouter.get("/", async (req, res, next) => {
   }
 });
 
+// ==========================================
+// DYNAMIC ROUTES (Must come last!)
+// ==========================================
+
 moviesRouter.get("/:id", async (req, res, next) => {
   try {
     const id = z.string().min(1).parse(req.params.id);
@@ -139,6 +161,10 @@ moviesRouter.get("/:id", async (req, res, next) => {
   }
 });
 
+// ==========================================
+// ADMIN MUTATION ROUTES
+// ==========================================
+
 moviesRouter.post("/", requireAuth, requireAdmin, async (req, res, next) => {
   try {
     const body = createMovieSchema.parse(req.body);
@@ -152,18 +178,55 @@ moviesRouter.post("/", requireAuth, requireAdmin, async (req, res, next) => {
         trailerUrl: body.trailerUrl,
         genre: body.genre,
         status: body.status ?? MovieStatus.CURRENTLY_RUNNING,
-        showtimes: body.showtimes?.length
-          ? {
-              create: body.showtimes.map((s) => ({
-                startsAt: s.startsAt
-              }))
-            }
-          : undefined
+        cast: body.cast,
+        director: body.director,
+        producer: body.producer,
       },
       include: { showtimes: { orderBy: { startsAt: "asc" } } }
     });
 
     res.status(201).json({ movie });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// NEW: Sprint 3 Showtime Scheduling with Conflict Prevention (20 pts)
+moviesRouter.post("/:id/showtimes", requireAuth, requireAdmin, async (req, res, next) => {
+  try {
+    // 1. Pass the ID through Zod to guarantee to TypeScript that it is a valid string!
+    const movieId = z.string().min(1).parse(req.params.id);
+    const { auditoriumId, startsAt } = scheduleSchema.parse(req.body);
+
+    // CONFLICT PREVENTION: Check a 3-hour window for the same auditorium
+    const conflict = await prisma.showtime.findFirst({
+      where: {
+        auditoriumId: auditoriumId,
+        startsAt: {
+          gte: new Date(startsAt.getTime() - 3 * 60 * 60 * 1000), 
+          lte: new Date(startsAt.getTime() + 3 * 60 * 60 * 1000)
+        }
+      },
+      include: { movie: true }
+    });
+
+    if (conflict) {
+      res.status(400).json({ 
+        error: `Scheduling Conflict: "${conflict.movie.title}" is already scheduled in this showroom near that time.` 
+      });
+      return;
+    }
+
+    // 2. Use the direct scalar fields exactly as they are named in your schema!
+    const showtime = await prisma.showtime.create({
+      data: { 
+        startsAt,
+        movieId: movieId,
+        auditoriumId: auditoriumId
+      }
+    });
+
+    res.status(201).json({ showtime });
   } catch (err) {
     next(err);
   }
@@ -179,4 +242,3 @@ moviesRouter.delete("/:id", requireAuth, requireAdmin, async (req, res, next) =>
     next(err);
   }
 });
-

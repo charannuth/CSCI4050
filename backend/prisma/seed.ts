@@ -1,10 +1,11 @@
 import "dotenv/config";
-
-import { MovieStatus } from "@prisma/client";
+import { PrismaClient, MovieStatus } from "@prisma/client";
 import bcrypt from "bcrypt";
+import process from "process";
 
-import { prisma } from "../src/db";
+const prisma = new PrismaClient();
 
+// Helper to generate dynamic showtimes so you always have upcoming dates
 function daysFromNow(days: number, hour: number, minute: number) {
   const d = new Date();
   d.setDate(d.getDate() + days);
@@ -13,14 +14,23 @@ function daysFromNow(days: number, hour: number, minute: number) {
 }
 
 async function main() {
-  await prisma.pendingPasswordReset.deleteMany();
-  await prisma.pendingEmailVerification.deleteMany();
-  await prisma.paymentCard.deleteMany();
-  await prisma.userAddress.deleteMany();
-  await prisma.user.deleteMany();
-  await prisma.showtime.deleteMany();
-  await prisma.movie.deleteMany();
+  console.log("🌱 Starting database seed...");
 
+  // 1. Create the 3 Required Showrooms (Auditoriums) for Deliverable 7
+  const theater1 = await prisma.auditorium.create({
+    data: { name: "Theater 1 - Standard", capacity: 30 },
+  });
+  const theater2 = await prisma.auditorium.create({
+    data: { name: "Theater 2 - IMAX", capacity: 50 },
+  });
+  const theater3 = await prisma.auditorium.create({
+    data: { name: "Theater 3 - VIP Deluxe", capacity: 20 },
+  });
+  console.log("✅ Created 3 Showrooms");
+
+  const theaters = [theater1, theater2, theater3];
+
+  // 2. The Original 10-Movie Catalog (Updated with Sprint 3 Fields)
   const movies = [
     {
       title: "Dune: Part Two",
@@ -29,7 +39,10 @@ async function main() {
       genre: "Sci-Fi",
       status: MovieStatus.CURRENTLY_RUNNING,
       posterUrl: "https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg",
-      trailerUrl: "https://www.youtube.com/embed/8g18jFHCLXk"
+      trailerUrl: "https://www.youtube.com/embed/8g18jFHCLXk",
+      cast: "Timothée Chalamet, Zendaya",
+      director: "Denis Villeneuve",
+      producer: "Mary Parent"
     },
     {
       title: "The Batman",
@@ -38,7 +51,10 @@ async function main() {
       genre: "Action",
       status: MovieStatus.CURRENTLY_RUNNING,
       posterUrl: "https://image.tmdb.org/t/p/w500/74xTEgt7R36Fpooo50r9T25onhq.jpg",
-      trailerUrl: "https://www.youtube.com/embed/mqqft2x_Aa4"
+      trailerUrl: "https://www.youtube.com/embed/mqqft2x_Aa4",
+      cast: "Robert Pattinson, Zoë Kravitz",
+      director: "Matt Reeves",
+      producer: "Dylan Clark"
     },
     {
       title: "Everything Everywhere All at Once",
@@ -47,7 +63,10 @@ async function main() {
       genre: "Comedy",
       status: MovieStatus.CURRENTLY_RUNNING,
       posterUrl: "https://image.tmdb.org/t/p/w500/w3LxiVYdWWRvEVdn5RYq6jIqkb1.jpg",
-      trailerUrl: "https://www.youtube.com/embed/wxN1T1uxQ2g"
+      trailerUrl: "https://www.youtube.com/embed/wxN1T1uxQ2g",
+      cast: "Michelle Yeoh, Ke Huy Quan",
+      director: "Daniel Kwan, Daniel Scheinert",
+      producer: "Jonathan Wang"
     },
     {
       title: "Top Gun: Maverick",
@@ -56,7 +75,10 @@ async function main() {
       genre: "Action",
       status: MovieStatus.CURRENTLY_RUNNING,
       posterUrl: "https://image.tmdb.org/t/p/w500/62HCnUTziyWcpDaBO2i1DX17ljH.jpg",
-      trailerUrl: "https://www.youtube.com/embed/qSqVVswa420"
+      trailerUrl: "https://www.youtube.com/embed/qSqVVswa420",
+      cast: "Tom Cruise, Miles Teller",
+      director: "Joseph Kosinski",
+      producer: "Jerry Bruckheimer"
     },
     {
       title: "Oppenheimer",
@@ -65,7 +87,10 @@ async function main() {
       genre: "Drama",
       status: MovieStatus.CURRENTLY_RUNNING,
       posterUrl: "https://image.tmdb.org/t/p/w500/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg",
-      trailerUrl: "https://www.youtube.com/embed/uYPbbksJxIg"
+      trailerUrl: "https://www.youtube.com/embed/uYPbbksJxIg",
+      cast: "Cillian Murphy, Emily Blunt",
+      director: "Christopher Nolan",
+      producer: "Emma Thomas"
     },
     {
       title: "Spider-Man: No Way Home",
@@ -74,7 +99,10 @@ async function main() {
       genre: "Action",
       status: MovieStatus.CURRENTLY_RUNNING,
       posterUrl: "https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg",
-      trailerUrl: "https://www.youtube.com/embed/JfVOs4VSpmA"
+      trailerUrl: "https://www.youtube.com/embed/JfVOs4VSpmA",
+      cast: "Tom Holland, Zendaya",
+      director: "Jon Watts",
+      producer: "Kevin Feige"
     },
     {
       title: "Barbie",
@@ -83,7 +111,10 @@ async function main() {
       genre: "Comedy",
       status: MovieStatus.COMING_SOON,
       posterUrl: "https://image.tmdb.org/t/p/w500/iuFNMS8U5cb6xfzi51Dbkovj7vM.jpg",
-      trailerUrl: "https://www.youtube.com/embed/pBk4NYhWNMM"
+      trailerUrl: "https://www.youtube.com/embed/pBk4NYhWNMM",
+      cast: "Margot Robbie, Ryan Gosling",
+      director: "Greta Gerwig",
+      producer: "David Heyman"
     },
     {
       title: "Black Panther: Wakanda Forever",
@@ -92,7 +123,10 @@ async function main() {
       genre: "Action",
       status: MovieStatus.COMING_SOON,
       posterUrl: "https://image.tmdb.org/t/p/w500/sv1xJUazXeYqALzczSZ3O6nkH75.jpg",
-      trailerUrl: "https://www.youtube.com/embed/RlOB3UALvrQ"
+      trailerUrl: "https://www.youtube.com/embed/RlOB3UALvrQ",
+      cast: "Letitia Wright, Lupita Nyong'o",
+      director: "Ryan Coogler",
+      producer: "Kevin Feige"
     },
     {
       title: "Inception",
@@ -101,7 +135,10 @@ async function main() {
       genre: "Sci-Fi",
       status: MovieStatus.COMING_SOON,
       posterUrl: "https://image.tmdb.org/t/p/w500/oYuLEt3zVCKq57qu2F8dT7NIa6f.jpg",
-      trailerUrl: "https://www.youtube.com/embed/YoHD9XEInc0"
+      trailerUrl: "https://www.youtube.com/embed/YoHD9XEInc0",
+      cast: "Leonardo DiCaprio, Joseph Gordon-Levitt",
+      director: "Christopher Nolan",
+      producer: "Emma Thomas"
     },
     {
       title: "La La Land",
@@ -110,7 +147,10 @@ async function main() {
       genre: "Romance",
       status: MovieStatus.COMING_SOON,
       posterUrl: "https://image.tmdb.org/t/p/w500/uDO8zWDhfWwoFdKS4fzkUJt0Rf0.jpg",
-      trailerUrl: "https://www.youtube.com/embed/0pdqf4P9MB8"
+      trailerUrl: "https://www.youtube.com/embed/0pdqf4P9MB8",
+      cast: "Ryan Gosling, Emma Stone",
+      director: "Damien Chazelle",
+      producer: "Fred Berger"
     }
   ];
 
@@ -118,19 +158,20 @@ async function main() {
     const created = await prisma.movie.create({
       data: {
         ...m,
+        // Schedule each movie dynamically across your 3 theaters
         showtimes: {
           create: [
-            { startsAt: daysFromNow(idx % 3, 14, 0) },
-            { startsAt: daysFromNow(idx % 3, 17, 0) },
-            { startsAt: daysFromNow(idx % 3, 20, 0) }
+            { startsAt: daysFromNow(idx % 3, 14, 0), auditoriumId: theaters[0].id },
+            { startsAt: daysFromNow(idx % 3, 17, 0), auditoriumId: theaters[1].id },
+            { startsAt: daysFromNow(idx % 3, 20, 0), auditoriumId: theaters[2].id }
           ]
         }
       }
     });
-    // eslint-disable-next-line no-console
-    console.log(`Seeded movie: ${created.title}`);
+    console.log(`🎬 Seeded movie: ${created.title}`);
   }
 
+  // 3. Create Users with secure passwords and Sprint 3 Opt-In flags
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@email.com";
   const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "Admin123!";
   const adminHash = await bcrypt.hash(adminPassword, 12);
@@ -142,11 +183,11 @@ async function main() {
       firstName: "Admin",
       lastName: "User",
       role: "ADMIN",
-      status: "ACTIVE"
+      status: "ACTIVE",
+      isSubscribed: true // Required for Sprint 3 Promo logic
     }
   });
-  // eslint-disable-next-line no-console
-  console.log(`Seeded admin user: ${adminEmail} (password: ${adminPassword})`);
+  console.log(`👑 Seeded admin user: ${adminEmail} (password: ${adminPassword})`);
 
   const verifiedEmail = process.env.SEED_VERIFIED_USER_EMAIL ?? "user@email.com";
   const verifiedPassword = process.env.SEED_VERIFIED_USER_PASSWORD ?? "User123!";
@@ -159,19 +200,19 @@ async function main() {
       firstName: "Verified",
       lastName: "Customer",
       role: "CUSTOMER",
-      status: "ACTIVE"
+      status: "ACTIVE",
+      isSubscribed: true // Required for Sprint 3 Promo logic
     }
   });
-  // eslint-disable-next-line no-console
-  console.log(`Seeded verified user: ${verifiedEmail} (password: ${verifiedPassword})`);
+  console.log(`👤 Seeded verified user: ${verifiedEmail} (password: ${verifiedPassword})`);
+
+  console.log("🎉 Seeding finished successfully!");
 }
 
 main()
   .then(async () => prisma.$disconnect())
   .catch(async (e) => {
-    // eslint-disable-next-line no-console
     console.error(e);
     await prisma.$disconnect();
     process.exit(1);
   });
-

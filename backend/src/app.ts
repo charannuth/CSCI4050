@@ -7,6 +7,7 @@ import { ZodError } from "zod";
 import { moviesRouter } from "./routes/movies";
 import authRouter from "./routes/auth"; // For Registration/Login
 import usersRouter from "./routes/users";
+import { promotionsRouter } from "./routes/promotions";
 
 export function createApp(opts: { corsOrigin?: string | undefined }) {
   const app = express();
@@ -31,6 +32,7 @@ export function createApp(opts: { corsOrigin?: string | undefined }) {
   app.use("/api/movies", moviesRouter);
   app.use("/api/auth", authRouter);
   app.use("/api/users", usersRouter);
+  app.use("/api/promotions", promotionsRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: "Not found", path: req.path });

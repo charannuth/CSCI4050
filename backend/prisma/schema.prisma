@@ -19,24 +19,30 @@ enum MovieStatus {
 // USER & ACCOUNTS
 // ==========================================
 model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
-  password       String?    // Will store the securely hashed password
-  firstName      String
-  lastName       String
-  phone          String?
-  status         String   @default("ACTIVE") // Requirement for Active/Inactive users
-  role           String   @default("CUSTOMER")
+  id               String   @id @default(cuid())
+  email            String   @unique
+  password         String?    // Will store the securely hashed password
+  firstName        String
+  lastName         String
+  phone            String?
+  status           String   @default("ACTIVE") // Requirement for Active/Inactive users
+  role             String   @default("CUSTOMER")
+
+  // NEW: Requirement for Deliverable 7 (Promotions Opt-In)
+  isSubscribed     Boolean  @default(false)
 
   // Many-to-Many relationship for the Favorites feature
-  favoriteMovies Movie[]  @relation("UserFavorites")
-  address        UserAddress?
-  paymentCards   PaymentCard[]
+  favoriteMovies   Movie[]  @relation("UserFavorites")
+  address          UserAddress?
+  paymentCards     PaymentCard[]
   pendingEmailVerifications PendingEmailVerification[]
   pendingPasswordResets     PendingPasswordReset[]
+  
+  // NEW: Links a user to their checkout orders
+  bookings         Booking[]
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([email])
   @@index([status])
@@ -104,12 +110,17 @@ model PendingPasswordReset {
 model Movie {
   id          String      @id @default(cuid())
   title       String      @unique
-  rating      String?
-  description String?
+  rating      String?     // Used for MPAA Rating
+  description String?     // Used for Synopsis
   posterUrl   String?
   trailerUrl  String?
   genre       String
   status      MovieStatus @default(CURRENTLY_RUNNING)
+
+  // NEW: Missing fields required by Deliverable 7
+  cast        String?
+  director    String?
+  producer    String?
 
   // Relationships
   showtimes   Showtime[]
@@ -123,15 +134,100 @@ model Movie {
   @@index([title])
 }
 
+// NEW: Represents the physical theater rooms (Showrooms)
+model Auditorium {
+  id          String     @id @default(cuid())
+  name        String     // e.g., "Theater 1"
+  capacity    Int
+
+  showtimes   Showtime[]
+  seats       Seat[]
+}
+
+// NEW: Represents physical seats in a specific auditorium
+model Seat {
+  id           String     @id @default(cuid())
+  row          String     // "A", "B", "C"
+  number       Int        // 1, 2, 3
+  
+  auditoriumId String
+  auditorium   Auditorium @relation(fields: [auditoriumId], references: [id], onDelete: Cascade)
+
+  tickets      Ticket[]   
+}
+
 model Showtime {
-  id        String   @id @default(cuid())
-  startsAt  DateTime
+  id           String     @id @default(cuid())
+  startsAt     DateTime
 
-  movieId   String
-  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  movieId      String
+  movie        Movie      @relation(fields: [movieId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
+  // NEW: Links the showtime to a physical room (Showroom)
+  auditoriumId String
+  auditorium   Auditorium @relation(fields: [auditoriumId], references: [id], onDelete: Cascade)
+
+  // NEW: Links showtime to tickets sold
+  tickets      Ticket[]
+
+  createdAt    DateTime   @default(now())
 
   @@index([movieId])
   @@index([startsAt])
+  @@index([auditoriumId])
+}
+
+// ==========================================
+// CHECKOUT & PROMOTIONS (SPRINT 3)
+// ==========================================
+
+// NEW: The global promo codes created by the Admin
+model Promotion {
+  id              String    @id @default(cuid())
+  code            String    @unique 
+  discountPercent Int
+  startDate       DateTime
+  endDate         DateTime
+  
+  bookings        Booking[]
+}
+
+// NEW: The overall order/receipt (Even though payment isn't required yet, we need this to hold the tickets)
+model Booking {
+  id            String    @id @default(cuid())
+  totalAmount   Float     @default(0.0)
+  status        String    @default("PENDING") 
+  createdAt     DateTime  @default(now())
+
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  promotionId   String?
+  promotion     Promotion? @relation(fields: [promotionId], references: [id])
+
+  tickets       Ticket[]
+
+  @@index([userId])
+}
+
+// NEW: The individual tickets inside an order. This enforces seat availability!
+model Ticket {
+  id          String   @id @default(cuid())
+  type        String   // ADULT, CHILD, SENIOR
+  price       Float    @default(0.0)
+
+  bookingId   String
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  
+  showtimeId  String
+  showtime    Showtime @relation(fields: [showtimeId], references: [id], onDelete: Cascade)
+  
+  seatId      String
+  seat        Seat     @relation(fields: [seatId], references: [id])
+
+  // CRITICAL: This exact line prevents double-booking a physical seat for the same showtime
+  @@unique([showtimeId, seatId]) 
+  
+  @@index([bookingId])
+  @@index([showtimeId])
 }

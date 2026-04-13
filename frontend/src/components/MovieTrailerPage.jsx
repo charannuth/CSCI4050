@@ -22,14 +22,16 @@ export default function MovieTrailerPage({ movie, goBack, onStartBooking }) {
   }, [movie]);
 
   return (
-    <div className="trailer-page p-8 max-w-7xl mx-auto text-white">
+    <div className="trailer-page p-8 max-w-7xl mx-auto text-white animate-fade-in">
       <div className="trailer-header mb-6">
+        
         <button 
-          className="back-button bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors" 
+          className="bg-red-800 text-white font-bold py-2 px-6 rounded-md inline-flex items-center transition-all duration-300 hover:bg-red-700 hover:scale-105 hover:shadow-[0_0_15px_rgba(220,38,38,0.5)]" 
           onClick={goBack}
         >
-          ← Back
+          &larr; <span className="ml-2">Back</span>
         </button>
+
       </div>
 
       <div className="trailer-layout grid grid-cols-1 lg:grid-cols-2 gap-12">
@@ -56,7 +58,7 @@ export default function MovieTrailerPage({ movie, goBack, onStartBooking }) {
             </ul>
           </div>
 
-          {/* New Showtimes & Booking Section */}
+          {/* Showtimes & Booking Section */}
           <div className="bg-gray-900 p-6 rounded-lg border border-gray-800">
              <h3 className="text-2xl font-bold text-white mb-4">Select a Showtime</h3>
              
@@ -72,7 +74,7 @@ export default function MovieTrailerPage({ movie, goBack, onStartBooking }) {
                          <button 
                            key={st.id}
                            onClick={() => onStartBooking(st.id)}
-                           className="bg-cinema-primary hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition-colors shadow-lg"
+                           className="bg-cinema-primary text-white font-bold py-2 px-6 rounded-md transition-all duration-300 hover:bg-red-600 hover:scale-105 hover:shadow-[0_0_20px_rgba(220,38,38,0.6)]"
                          >
                            {st.time}
                          </button>
@@ -87,7 +89,7 @@ export default function MovieTrailerPage({ movie, goBack, onStartBooking }) {
 
         {/* Right half: Embedded trailer & Poster */}
         <div className="trailer-right space-y-6">
-          <div className="trailer-embed-wrapper rounded-lg overflow-hidden shadow-2xl border border-gray-800 bg-black aspect-video relative">
+          <div className="trailer-embed-wrapper rounded-lg overflow-hidden shadow-2xl border border-gray-800 bg-black aspect-video relative transition-all duration-500 hover:shadow-[0_10px_30px_rgba(59,130,246,0.3)] hover:-translate-y-2">
             {movie.trailerUrl ? (
               <iframe
                 src={movie.trailerUrl}
@@ -106,7 +108,7 @@ export default function MovieTrailerPage({ movie, goBack, onStartBooking }) {
           <img 
              src={movie.posterUrl} 
              alt={`${movie.title} Poster`} 
-             className="w-48 mx-auto rounded-lg shadow-2xl border border-gray-800 hidden lg:block"
+             className="w-48 mx-auto rounded-lg shadow-2xl border border-gray-800 hidden lg:block transition-all duration-500 hover:scale-105 hover:-translate-y-2"
           />
         </div>
       </div>

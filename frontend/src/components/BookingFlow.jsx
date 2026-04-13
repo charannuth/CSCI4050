@@ -47,28 +47,33 @@ export default function BookingFlow({ showtimeId, goBack }) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8 text-white">
-      <button onClick={goBack} className="mb-6 text-gray-400 hover:text-white font-bold">
-        ← Back to Movie
+    <div className="max-w-4xl mx-auto p-8 text-white animate-fade-in">
+      
+      {/* RED BLOCK: Back to Movie Button */}
+      <button 
+        onClick={goBack} 
+        className="bg-red-800 text-white font-bold py-2 px-6 rounded-md mb-6 inline-flex items-center transition-all duration-300 hover:bg-red-700 hover:scale-105 hover:shadow-[0_0_15px_rgba(220,38,38,0.5)]"
+      >
+        &larr; <span className="ml-2">Back to Movie</span>
       </button>
 
       <div className="bg-gray-900 p-8 rounded-lg shadow-2xl border border-gray-800">
         
         {/* STEP 1: TICKET SELECTION */}
         {step === 1 && (
-          <div>
+          <div className="animate-fade-in">
             <h2 className="text-3xl font-bold text-cinema-primary mb-6">Select Tickets</h2>
             <div className="space-y-6 max-w-md mx-auto">
               {['adult', 'child', 'senior'].map(type => (
-                <div key={type} className="flex justify-between items-center bg-gray-800 p-4 rounded-lg">
+                <div key={type} className="flex justify-between items-center bg-gray-800 p-4 rounded-lg border border-gray-700 hover:border-cinema-primary transition-colors">
                   <div className="flex flex-col">
                     <span className="text-xl capitalize font-bold">{type}</span>
                     <span className="text-gray-400 text-sm">${TICKET_PRICES[type].toFixed(2)}</span>
                   </div>
                   <div className="flex items-center space-x-4">
-                    <button onClick={() => handleTicketChange(type, -1)} className="bg-red-800 w-10 h-10 rounded-full font-bold text-xl hover:bg-red-700 transition-colors">-</button>
+                    <button onClick={() => handleTicketChange(type, -1)} className="bg-red-950 w-10 h-10 rounded-full font-bold text-xl hover:bg-red-800 hover:scale-110 active:scale-95 transition-all duration-200">-</button>
                     <span className="text-2xl font-bold w-6 text-center">{tickets[type]}</span>
-                    <button onClick={() => handleTicketChange(type, 1)} className="bg-green-800 w-10 h-10 rounded-full font-bold text-xl hover:bg-green-700 transition-colors">+</button>
+                    <button onClick={() => handleTicketChange(type, 1)} className="bg-green-950 w-10 h-10 rounded-full font-bold text-xl hover:bg-green-800 hover:scale-110 active:scale-95 transition-all duration-200">+</button>
                   </div>
                 </div>
               ))}
@@ -82,7 +87,7 @@ export default function BookingFlow({ showtimeId, goBack }) {
               <button 
                 onClick={() => setStep(2)}
                 disabled={totalTickets === 0}
-                className="bg-cinema-primary disabled:bg-gray-700 disabled:cursor-not-allowed hover:bg-red-700 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors"
+                className="bg-cinema-primary disabled:bg-gray-700 disabled:cursor-not-allowed text-white py-3 px-8 rounded-lg font-bold text-lg transition-all duration-300 hover:bg-red-600 hover:scale-105 hover:shadow-[0_0_20px_rgba(220,38,38,0.6)]"
               >
                 Continue to Seat Selection
               </button>
@@ -92,7 +97,7 @@ export default function BookingFlow({ showtimeId, goBack }) {
 
         {/* STEP 2: SEAT SELECTION MAP */}
         {step === 2 && (
-          <div>
+          <div className="animate-fade-in">
             <h2 className="text-3xl font-bold text-cinema-primary mb-2">Select Your Seats</h2>
             <div className="flex justify-between items-center text-gray-400 mb-8 border-b border-gray-800 pb-4">
               <p>
@@ -117,10 +122,10 @@ export default function BookingFlow({ showtimeId, goBack }) {
                     const isTaken = takenSeats.includes(seatId);
                     const isSelected = selectedSeats.includes(seatId);
                     
-                    let btnClass = "w-8 h-8 md:w-10 md:h-10 rounded-t-lg font-bold text-xs transition-colors ";
-                    if (isTaken) btnClass += "bg-gray-700 text-gray-500 cursor-not-allowed";
-                    else if (isSelected) btnClass += "bg-green-500 text-black";
-                    else btnClass += "bg-gray-400 hover:bg-gray-300 text-black";
+                    let btnClass = "w-8 h-8 rounded-t-lg font-bold text-xs transition-all duration-200 hover:scale-110 active:scale-95 ";
+                    if (isTaken) btnClass += "bg-gray-700 text-gray-500 cursor-not-allowed shadow-[0_4px_10px_rgba(0,0,0,0.5)]";
+                    else if (isSelected) btnClass += "bg-green-500 text-black shadow-[0_0_15px_rgba(74,222,128,0.7)]";
+                    else btnClass += "bg-gray-400 hover:bg-gray-300 text-black shadow-[0_4px_10px_rgba(0,0,0,0.5)]";
 
                     return (
                       <button 
@@ -139,12 +144,19 @@ export default function BookingFlow({ showtimeId, goBack }) {
             </div>
 
             <div className="mt-12 flex justify-between items-center border-t border-gray-800 pt-6">
-              <button onClick={() => setStep(1)} className="text-gray-400 hover:text-white font-bold">← Back to Tickets</button>
+              
+              {/* RED BLOCK: Back to Tickets Button */}
+              <button 
+                onClick={() => setStep(1)} 
+                className="bg-red-800 text-white font-bold py-2 px-6 rounded-md inline-flex items-center transition-all duration-300 hover:bg-red-700 hover:scale-105 hover:shadow-[0_0_15px_rgba(220,38,38,0.5)]"
+              >
+                &larr; <span className="ml-2">Back to Tickets</span>
+              </button>
               
               <button 
                 disabled={selectedSeats.length !== totalTickets}
                 onClick={() => alert("Checkout is NOT required for Sprint 3! Demo Complete! 🎉")}
-                className="bg-green-700 disabled:bg-gray-700 disabled:cursor-not-allowed hover:bg-green-600 text-white font-bold py-3 px-8 rounded-lg text-lg transition-colors"
+                className="bg-green-700 disabled:bg-gray-700 disabled:cursor-not-allowed text-white font-bold py-3 px-8 rounded-lg text-lg transition-all duration-300 hover:bg-green-600 hover:scale-105 hover:shadow-[0_0_20px_rgba(74,222,128,0.5)]"
               >
                 Confirm Booking
               </button>

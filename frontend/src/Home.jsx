@@ -5,7 +5,7 @@ import { addFavorite, getMoviesHome, getMovies, getMoviesMeta, removeFavorite } 
 function MovieCard({ movie, onSelectMovie, onViewTrailer, currentUser, onUpdateFavorites }) {
   const [isFavorite, setIsFavorite] = useState(false);
 
-  // 2. Sync heart from server when user or movie changes (setState deferred avoids cascading-render lint)
+  // 2. Sync heart from server when user or movie changes
   useEffect(() => {
     const id = window.requestAnimationFrame(() => {
       if (currentUser && currentUser.favoriteMovies) {
@@ -45,14 +45,15 @@ function MovieCard({ movie, onSelectMovie, onViewTrailer, currentUser, onUpdateF
   };
 
   return (
-    <div className="movie-card">
+    <div className="movie-card transition-all duration-300 hover:bg-gray-900 rounded-xl pb-4">
+      
+      {/* --- THE FUTURISTIC FLOATING POSTER WRAPPER --- */}
       <div
-        className="movie-poster-wrapper"
+        className="movie-poster-wrapper relative cursor-pointer transition-all duration-500 hover:-translate-y-3 hover:scale-105 hover:shadow-[0_20px_40px_rgba(0,0,0,0.7)] hover:shadow-cyan-500/30 rounded-xl"
         onClick={() => onViewTrailer?.(movie)}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => e.key === "Enter" && onViewTrailer?.(movie)}
-        style={{ position: "relative" }} 
       >
         
         {/* Favorites Heart Icon */}
@@ -72,7 +73,9 @@ function MovieCard({ movie, onSelectMovie, onViewTrailer, currentUser, onUpdateF
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            transition: "transform 0.2s ease-in-out",
           }}
+          className="hover:scale-110"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -90,22 +93,24 @@ function MovieCard({ movie, onSelectMovie, onViewTrailer, currentUser, onUpdateF
           </svg>
         </button>
 
+        {/* Added rounded corners to the image so it fits the new wrapper */}
         <img
           src={movie.posterUrl}
           alt={movie.title}
-          className="movie-poster"
+          className="movie-poster rounded-xl w-full object-cover"
         />
       </div>
 
-      <div className="movie-info">
-        <h3>{movie.title}</h3>
-        <p className="movie-meta">
+      <div className="movie-info px-2">
+        <h3 className="mt-4">{movie.title}</h3>
+        <p className="movie-meta text-gray-400">
           {movie.rating} | {movie.genre}
         </p>
-        <p className="movie-description">{movie.description}</p>
+        <p className="movie-description text-sm mt-2">{movie.description}</p>
 
+        {/* --- THE NEON GLOWING BUTTON --- */}
         <button
-          className="movie-button"
+          className="movie-button w-full mt-4 bg-cinema-primary text-white font-semibold py-2 rounded transition-all duration-300 hover:bg-red-600 hover:scale-105 hover:shadow-[0_0_20px_rgba(220,38,38,0.6)]"
           onClick={() => onViewTrailer(movie)}
         >
           Book Tickets
@@ -220,7 +225,7 @@ export default function Home({ onSelectMovie, onViewTrailer, currentUser, onUpda
             ))}
           </select>
 
-          <button onClick={handleSearch}>
+          <button onClick={handleSearch} className="transition-all duration-300 hover:scale-105 hover:bg-blue-600">
             Search
           </button>
         </div>

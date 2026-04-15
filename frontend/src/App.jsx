@@ -279,6 +279,7 @@ function App() {
         <BookingFlow 
           showtimeId={bookingShowtimeId} 
           goBack={() => runPageTransition(() => setBookingShowtimeId(null))} 
+          currentUser={currentUser}
         />
       );
     }

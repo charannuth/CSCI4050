@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 import { prisma } from "../db";
 import { encryptPaymentCard } from "../lib/crypto";
@@ -268,6 +269,71 @@ router.delete("/me/favorites/:movieId", async (req: AuthenticatedRequest, res, n
     res.json({ message: "Movie removed from favorites.", favorites: updatedUser.favoriteMovies });
   } catch (error) {
     next(error);
+  }
+});
+
+router.get("/me/recommendations", async (req: AuthenticatedRequest, res, next): Promise<void> => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      include: { favoriteMovies: true }
+    });
+
+    if (!user) {
+      res.status(404).json({ error: "User not found" });
+      return;
+    }
+
+    // 1. Build the AI Prompt
+    let prompt = "You are a cinema recommendation engine. Recommend 3 movies. ";
+    if (user.favoriteMovies.length > 0) {
+      const titles = user.favoriteMovies.map(m => m.title).join(', ');
+      const genres = Array.from(new Set(user.favoriteMovies.map(m => m.genre))).join(', ');
+      prompt += `The user loves these movies: ${titles}. They enjoy these genres: ${genres}. `;
+      prompt += `Based on this, suggest 3 similar but distinct movies they might like. `;
+    } else {
+      prompt += `The user is new and has no favorites yet. Suggest 3 universally acclaimed, must-watch movies from different genres. `;
+    }
+    prompt += `Respond strictly with a raw JSON array of objects. Each object must have 'title', 'genre', and 'reason' (a 1-sentence hook). Do NOT include markdown blocks like \`\`\`json.`;
+
+    // 2. Call the Gemini API
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) throw new Error("Missing API Key");
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    
+    const result = await model.generateContent(prompt);
+    const rawText = result.response.text();
+    
+    const cleanedText = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const recommendations = JSON.parse(cleanedText);
+
+    res.json(recommendations);
+
+  } catch (error) {
+    console.error("AI Recommendation Failed (Serving Fallback):", error);
+    
+    // FAULT TOLERANCE: If the AI crashes or rate-limits, serve these instead of a 500 error!
+    const fallbackRecommendations = [
+      {
+        title: "Interstellar",
+        genre: "Sci-Fi / Drama",
+        reason: "Since our AI is currently taking a coffee break, we highly recommend this visually stunning masterpiece about the power of love across dimensions."
+      },
+      {
+        title: "The Grand Budapest Hotel",
+        genre: "Comedy / Adventure",
+        reason: "A delightfully quirky and visually symmetrical adventure that never fails to entertain."
+      },
+      {
+        title: "Parasite",
+        genre: "Thriller / Dark Comedy",
+        reason: "A gripping, masterfully crafted social thriller that will keep you guessing until the very end."
+      }
+    ];
+
+    res.json(fallbackRecommendations);
   }
 });
 

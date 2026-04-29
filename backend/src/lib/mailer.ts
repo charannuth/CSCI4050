@@ -131,3 +131,51 @@ export async function sendProfileUpdatedEmail(email: string, name: string): Prom
     `<p>Hello ${name},</p><p>Your profile information was changed. If this was not you, please reset your password immediately.</p>`
   );
 }
+
+export interface OrderDetails {
+  email: string;
+  firstName: string;
+  movieTitle: string;
+  showtime: string; // e.g., "Friday, Oct 27 at 7:00 PM"
+  seats: string[]; // e.g., ["A1", "A2"]
+  totalAmount: number;
+  bookingId: string;
+}
+
+export async function sendOrderConfirmationEmail(order: OrderDetails): Promise<void> {
+  const safeName = escapeHtml(order.firstName);
+  const safeTitle = escapeHtml(order.movieTitle);
+  const safeShowtime = escapeHtml(order.showtime);
+  const safeSeats = escapeHtml(order.seats.join(", "));
+  const safeBookingId = escapeHtml(order.bookingId.slice(-6).toUpperCase());
+
+  const subject = `🎟️ Order Confirmation: ${safeTitle}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #111; color: #fff; border-radius: 10px; overflow: hidden; border: 1px solid #333;">
+      <div style="background-color: #dc2626; padding: 20px; text-align: center;">
+        <h1 style="margin: 0; color: #fff; font-size: 24px;">Tickets Confirmed!</h1>
+      </div>
+      <div style="padding: 30px;">
+        <p style="font-size: 16px;">Hi ${safeName},</p>
+        <p style="font-size: 16px;">Thank you for your purchase. Here are your ticket details for your upcoming movie:</p>
+        
+        <div style="background-color: #222; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc2626;">
+          <h2 style="margin: 0 0 10px 0; color: #dc2626;">${safeTitle}</h2>
+          <p style="margin: 5px 0; color: #ccc;"><strong>Showtime:</strong> ${safeShowtime}</p>
+          <p style="margin: 5px 0; color: #ccc;"><strong>Seats:</strong> ${safeSeats}</p>
+          <p style="margin: 5px 0; color: #ccc;"><strong>Order ID:</strong> #${safeBookingId}</p>
+        </div>
+
+        <p style="font-size: 18px; text-align: right; border-top: 1px solid #444; padding-top: 10px;">
+          <strong>Total Paid:</strong> $${order.totalAmount.toFixed(2)}
+        </p>
+        
+        <p style="color: #888; font-size: 12px; margin-top: 30px; text-align: center;">
+          Please present this email or your Order ID at the box office. Enjoy the show!
+        </p>
+      </div>
+    </div>
+  `;
+
+  await sendEmail(order.email, subject, html);
+}

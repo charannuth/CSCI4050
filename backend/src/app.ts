@@ -3,6 +3,7 @@ import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import { ZodError } from "zod";
+import checkoutRouter from "./routes/checkout";
 
 import { moviesRouter } from "./routes/movies";
 import authRouter from "./routes/auth"; // For Registration/Login
@@ -33,6 +34,7 @@ export function createApp(opts: { corsOrigin?: string | undefined }) {
   app.use("/api/auth", authRouter);
   app.use("/api/users", usersRouter);
   app.use("/api/promotions", promotionsRouter);
+  app.use("/api/checkout", checkoutRouter);
 
   app.use((req, res) => {
     res.status(404).json({ error: "Not found", path: req.path });

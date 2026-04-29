@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { addFavorite, getMoviesHome, getMovies, getMoviesMeta, removeFavorite } from "./api";
+import AIRecommendations from "./components/AIRecommendations";
+import { getAuthToken } from "./api";
 
 // 1. ADDED onUpdateFavorites to the props
 function MovieCard({ movie, onSelectMovie, onViewTrailer, currentUser, onUpdateFavorites }) {
@@ -221,7 +223,7 @@ export default function Home({ onSelectMovie, onViewTrailer, currentUser, onUpda
             {genres.map((genre, index) => (
               <option key={index} value={genre}>
                 {genre}
-                </option>
+              </option>
             ))}
           </select>
 
@@ -232,6 +234,11 @@ export default function Home({ onSelectMovie, onViewTrailer, currentUser, onUpda
       </header>
 
       <main>
+        {/* --- NEW: AI Recommendations ONLY show if logged in --- */}
+        {getAuthToken() && !isFiltering && (
+          <AIRecommendations />
+        )}
+
         {isFiltering ? (
           filteredMovies.length > 0 ? (
             <MovieSection
@@ -240,7 +247,7 @@ export default function Home({ onSelectMovie, onViewTrailer, currentUser, onUpda
               onSelectMovie={onSelectMovie}
               onViewTrailer={onViewTrailer}
               currentUser={currentUser} 
-              onUpdateFavorites={onUpdateFavorites} // <-- Passed to Section
+              onUpdateFavorites={onUpdateFavorites} 
             />
           ) : (
             <div className="page-message">No movies found.</div>
@@ -253,7 +260,7 @@ export default function Home({ onSelectMovie, onViewTrailer, currentUser, onUpda
             onSelectMovie={onSelectMovie}
             onViewTrailer={onViewTrailer}
             currentUser={currentUser} 
-            onUpdateFavorites={onUpdateFavorites} // <-- Passed to Section
+            onUpdateFavorites={onUpdateFavorites} 
           />
           <MovieSection
             title="Coming Soon"
@@ -261,7 +268,7 @@ export default function Home({ onSelectMovie, onViewTrailer, currentUser, onUpda
             onSelectMovie={onSelectMovie}
             onViewTrailer={onViewTrailer}
             currentUser={currentUser} 
-            onUpdateFavorites={onUpdateFavorites} // <-- Passed to Section
+            onUpdateFavorites={onUpdateFavorites} 
           />
         </>
       )}

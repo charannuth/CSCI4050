@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { checkoutBooking } from '../api';
 
 // Define the prices for each ticket type
 const TICKET_PRICES = {
@@ -68,14 +69,56 @@ export default function BookingFlow({ showtimeId, goBack, currentUser }) {
     }
   };
 
-  const handleFinalCheckout = () => {
+  const [isProcessing, setIsProcessing] = useState(false); // Add this near your other state variables
+
+  const handleFinalCheckout = async () => {
     if (!currentUser) {
       alert("Please log in to complete your purchase.");
       return;
     }
-    // This is where we would normally send the payload to the backend
-    alert(`Payment processing is not required for this demo! \n\nOrder simulated for ${currentUser.firstName}.\nTotal Billed: $${finalTotal.toFixed(2)}\n\nDemo Complete! 🎉`);
-    goBack(); // Return to home/movie after "checkout"
+
+    setIsProcessing(true);
+
+    try {
+      // 1. Map the chosen seats to the ticket types
+      const ticketPayload = [];
+      let currentSeatIndex = 0;
+
+      const assignTickets = (type, count, price) => {
+        for (let i = 0; i < count; i++) {
+          ticketPayload.push({
+            seatId: selectedSeats[currentSeatIndex], // e.g., "D7"
+            type: type.toUpperCase(), // "ADULT", "CHILD"
+            price: price
+          });
+          currentSeatIndex++;
+        }
+      };
+
+      assignTickets('adult', tickets.adult, TICKET_PRICES.adult);
+      assignTickets('child', tickets.child, TICKET_PRICES.child);
+      assignTickets('senior', tickets.senior, TICKET_PRICES.senior);
+
+      // 2. Send it to our new backend route!
+      // (Note: If showtimeId is missing from props during your testing, we pass a fallback so it doesn't crash)
+      const payload = {
+        showtimeId: showtimeId || "demo-showtime-id", 
+        tickets: ticketPayload,
+        totalAmount: finalTotal
+      };
+
+      const response = await checkoutBooking(payload);
+
+      // 3. Success! 
+      alert(`Payment Successful! 🎉\n\nOrder confirmed for ${currentUser.firstName}.\nTotal Billed: $${finalTotal.toFixed(2)}\n\n${response.message}`);
+      goBack(); // Return to home
+
+    } catch (error) {
+      console.error("Checkout error:", error);
+      alert(error.body?.error || "Checkout failed! Please check your connection and try again.");
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -301,9 +344,10 @@ export default function BookingFlow({ showtimeId, goBack, currentUser }) {
               <div className="flex flex-col space-y-4">
                 <button 
                   onClick={handleFinalCheckout}
-                  className="w-full bg-green-700 text-white font-bold py-4 rounded-lg text-xl transition-all duration-300 hover:bg-green-600 hover:scale-105 hover:shadow-[0_0_20px_rgba(74,222,128,0.5)]"
+                  disabled={isProcessing}
+                  className="w-full bg-green-700 disabled:bg-gray-600 disabled:cursor-wait text-white font-bold py-4 rounded-lg text-xl transition-all duration-300 hover:bg-green-600 hover:scale-105 hover:shadow-[0_0_20px_rgba(74,222,128,0.5)]"
                 >
-                  Confirm Purchase
+                  {isProcessing ? "Processing..." : "Confirm Purchase"}
                 </button>
                 <button 
                   onClick={() => setStep(2)} 

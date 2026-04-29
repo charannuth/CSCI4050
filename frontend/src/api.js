@@ -6,7 +6,7 @@
 const BASE = import.meta.env.VITE_API_BASE ?? ''
 const TOKEN_KEY = 'ces_auth_token'
 
-const FETCH_TIMEOUT = 10000
+const FETCH_TIMEOUT = 30000
 
 let authToken = localStorage.getItem(TOKEN_KEY) ?? ''
 
@@ -161,6 +161,10 @@ export function getFavorites() {
   return request('/api/users/me/favorites')
 }
 
+export function getRecommendations() {
+  return request('/api/users/me/recommendations');
+}
+
 export function addFavorite(movieId) {
   return request('/api/users/me/favorites', {
     method: 'POST',
@@ -212,5 +216,12 @@ export function sendPromotionEmail(promoId) {
 export function deletePromotion(promoId) {
   return request(`/api/promotions/${promoId}`, {
     method: 'DELETE',
+  });
+}
+
+export function checkoutBooking(payload) {
+  return request('/api/checkout', {
+    method: 'POST',
+    body: JSON.stringify(payload),
   });
 }

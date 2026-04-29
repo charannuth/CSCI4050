@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { checkoutBooking } from '../api';
 
 // Define the prices for each ticket type
@@ -9,15 +9,17 @@ const TICKET_PRICES = {
 };
 
 export default function BookingFlow({ showtimeId, goBack, currentUser }) {
-  // Step 1: Tickets, Step 2: Seats, Step 3: Checkout / Order Summary
+  // Step 1: Tickets, Step 2: Seats, Step 3: Checkout, Step 4: Confirmation
   const [step, setStep] = useState(1); 
   const [tickets, setTickets] = useState({ adult: 0, child: 0, senior: 0 });
   const [selectedSeats, setSelectedSeats] = useState([]);
+  const savedCards = currentUser?.paymentCards ?? [];
   
   // Checkout States
   const [promoCode, setPromoCode] = useState("");
   const [discountPercent, setDiscountPercent] = useState(0);
-  const [paymentMethod, setPaymentMethod] = useState("new");
+  const [paymentMethod, setPaymentMethod] = useState(savedCards.length > 0 ? savedCards[0].id : "new");
+  const [confirmation, setConfirmation] = useState(null);
 
   const totalTickets = tickets.adult + tickets.child + tickets.senior;
   
@@ -71,9 +73,33 @@ export default function BookingFlow({ showtimeId, goBack, currentUser }) {
 
   const [isProcessing, setIsProcessing] = useState(false); // Add this near your other state variables
 
+  useEffect(() => {
+    if (savedCards.length === 0) {
+      if (paymentMethod !== "new") {
+        setPaymentMethod("new");
+      }
+      return;
+    }
+
+    if (paymentMethod === "new") {
+      return;
+    }
+
+    const hasSelectedCard = savedCards.some((card) => card.id === paymentMethod);
+    if (!hasSelectedCard) {
+      setPaymentMethod(savedCards[0].id);
+    }
+  }, [savedCards, paymentMethod]);
+
+  const showNewCardForm = savedCards.length === 0 || paymentMethod === "new";
+
   const handleFinalCheckout = async () => {
     if (!currentUser) {
       alert("Please log in to complete your purchase.");
+      return;
+    }
+    if (!showtimeId) {
+      alert("Could not find a valid showtime. Please go back and pick a showtime again.");
       return;
     }
 
@@ -87,7 +113,7 @@ export default function BookingFlow({ showtimeId, goBack, currentUser }) {
       const assignTickets = (type, count, price) => {
         for (let i = 0; i < count; i++) {
           ticketPayload.push({
-            seatId: selectedSeats[currentSeatIndex], // e.g., "D7"
+            seatLabel: selectedSeats[currentSeatIndex], // e.g., "D7"
             type: type.toUpperCase(), // "ADULT", "CHILD"
             price: price
           });
@@ -99,19 +125,22 @@ export default function BookingFlow({ showtimeId, goBack, currentUser }) {
       assignTickets('child', tickets.child, TICKET_PRICES.child);
       assignTickets('senior', tickets.senior, TICKET_PRICES.senior);
 
-      // 2. Send it to our new backend route!
-      // (Note: If showtimeId is missing from props during your testing, we pass a fallback so it doesn't crash)
       const payload = {
-        showtimeId: showtimeId || "demo-showtime-id", 
+        showtimeId,
         tickets: ticketPayload,
-        totalAmount: finalTotal
+        totalAmount: finalTotal,
+        paymentCardId: showNewCardForm ? undefined : paymentMethod
       };
 
       const response = await checkoutBooking(payload);
 
-      // 3. Success! 
-      alert(`Payment Successful! 🎉\n\nOrder confirmed for ${currentUser.firstName}.\nTotal Billed: $${finalTotal.toFixed(2)}\n\n${response.message}`);
-      goBack(); // Return to home
+      setConfirmation({
+        bookingId: response.bookingId,
+        message: response.message,
+        total: finalTotal,
+        seats: [...selectedSeats]
+      });
+      setStep(4);
 
     } catch (error) {
       console.error("Checkout error:", error);
@@ -250,7 +279,7 @@ export default function BookingFlow({ showtimeId, goBack, currentUser }) {
             <div>
               <h2 className="text-3xl font-bold text-cinema-primary mb-6">Checkout</h2>
               
-              {/* Fake Payment Method Selection */}
+              {/* Payment Method Selection */}
               <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 mb-6">
                 <h3 className="text-xl font-bold mb-4">Payment Method</h3>
                 <select 
@@ -258,12 +287,15 @@ export default function BookingFlow({ showtimeId, goBack, currentUser }) {
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
                 >
+                  {savedCards.map((card) => (
+                    <option key={card.id} value={card.id}>
+                      {(card.brand || "Card")} ending in {card.last4} (exp {card.expiresMonth}/{card.expiresYear})
+                    </option>
+                  ))}
                   <option value="new">Add New Card...</option>
-                  <option value="saved_1">Visa ending in 4242</option>
-                  <option value="saved_2">Mastercard ending in 1234</option>
                 </select>
 
-                {paymentMethod === "new" && (
+                {showNewCardForm && (
                   <div className="mt-4 space-y-4">
                     <input type="text" placeholder="Cardholder Name" className="w-full bg-gray-900 border border-gray-700 text-white p-3 rounded-md focus:border-cinema-primary outline-none" />
                     <input type="text" placeholder="Card Number" className="w-full bg-gray-900 border border-gray-700 text-white p-3 rounded-md focus:border-cinema-primary outline-none" />
@@ -358,6 +390,38 @@ export default function BookingFlow({ showtimeId, goBack, currentUser }) {
               </div>
             </div>
 
+          </div>
+        )}
+
+        {step === 4 && confirmation && (
+          <div className="animate-fade-in max-w-2xl mx-auto text-center">
+            <h2 className="text-4xl font-bold text-green-400 mb-4">Success! Booking Confirmed</h2>
+            <p className="text-lg text-gray-200 mb-3">
+              Your tickets have been emailed to <strong>{currentUser?.email}</strong>.
+            </p>
+            <p className="text-gray-300 mb-8">{confirmation.message}</p>
+
+            <div className="bg-gray-800 border border-gray-700 rounded-lg p-6 text-left space-y-3 mb-8">
+              <div className="flex justify-between">
+                <span className="text-gray-300">Order ID</span>
+                <span className="font-bold text-white">#{confirmation.bookingId.slice(-8).toUpperCase()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-300">Seats</span>
+                <span className="font-bold text-white">{confirmation.seats.join(", ")}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-300">Total Paid</span>
+                <span className="font-bold text-green-400">${confirmation.total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={goBack}
+              className="bg-cinema-primary text-white font-bold py-3 px-8 rounded-lg transition-all duration-300 hover:bg-red-600 hover:scale-105"
+            >
+              Back to Home
+            </button>
           </div>
         )}
       </div>

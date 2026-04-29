@@ -62,7 +62,7 @@ export default function Profile({ onBack, onUserRefreshed }) {
           });
         }
         if (onUserRefreshed) {
-          onUserRefreshed(data.user, data.favoriteMovies ?? []);
+          onUserRefreshed(data.user, data.favoriteMovies ?? [], data.paymentCards ?? []);
         }
       } catch (error) {
         setStatus({ type: "error", message: error?.body?.error || error.message });
@@ -88,7 +88,7 @@ export default function Profile({ onBack, onUserRefreshed }) {
       setCards(fresh.paymentCards ?? []);
       setStatus({ type: "success", message: "Profile updated successfully." });
       if (onUserRefreshed) {
-        onUserRefreshed(fresh.user, fresh.favoriteMovies ?? []);
+        onUserRefreshed(fresh.user, fresh.favoriteMovies ?? [], fresh.paymentCards ?? []);
       }
     } catch (error) {
       setStatus({ type: "error", message: error?.body?.error || error.message });
@@ -106,6 +106,9 @@ export default function Profile({ onBack, onUserRefreshed }) {
       });
       const fresh = await getMe();
       setCards(fresh.paymentCards ?? []);
+      if (onUserRefreshed) {
+        onUserRefreshed(fresh.user, fresh.favoriteMovies ?? [], fresh.paymentCards ?? []);
+      }
       setCardForm({
         cardholderName: "",
         cardNumber: "",
@@ -126,6 +129,9 @@ export default function Profile({ onBack, onUserRefreshed }) {
       await removePaymentCard(cardId);
       const fresh = await getMe();
       setCards(fresh.paymentCards ?? []);
+      if (onUserRefreshed) {
+        onUserRefreshed(fresh.user, fresh.favoriteMovies ?? [], fresh.paymentCards ?? []);
+      }
       setStatus({ type: "success", message: "Payment card removed." });
     } catch (error) {
       setStatus({ type: "error", message: error?.body?.error || error.message });

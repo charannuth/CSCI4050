@@ -7,6 +7,7 @@ import Login from "./pages/Login.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx"; 
 import Profile from "./pages/Profile.jsx";
 import Favorites from "./pages/Favorites.jsx";
+import OrderHistory from "./pages/OrderHistory.jsx";
 import BookingFlow from "./components/BookingFlow.jsx";
 import { getMe, logout, setAuthToken, verifyEmail } from "./api";
 
@@ -22,6 +23,7 @@ function App() {
   );
   const [showProfile, setShowProfile] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [showOrderHistory, setShowOrderHistory] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isPageTransitioning, setIsPageTransitioning] = useState(false);
@@ -76,6 +78,7 @@ function App() {
         const me = await getMe();
         setCurrentUser({
           ...me.user,
+          paymentCards: me.paymentCards ?? [],
           favoriteMovies: me.favoriteMovies ?? []
         });
       } catch {
@@ -105,6 +108,7 @@ function App() {
     setShowLogin(false);
     setShowProfile(false);
     setShowFavorites(false);
+    setShowOrderHistory(false);
     setSelectedMovie(null);
     setTrailerMovie(null);
     setShowUserMenu(false);
@@ -113,7 +117,11 @@ function App() {
   const handleLoginSuccess = (authData) => {
     runPageTransition(() => {
       setAuthToken(authData.token);
-      setCurrentUser(authData.user);
+      setCurrentUser({
+        ...authData.user,
+        paymentCards: authData.user?.paymentCards ?? [],
+        favoriteMovies: authData.user?.favoriteMovies ?? []
+      });
       goHomeImmediate();
     });
   };
@@ -141,6 +149,7 @@ function App() {
     setShowProfile(false);
     setShowLogin(false);
     setShowRegistration(false);
+    setShowOrderHistory(false);
     setSelectedMovie(null);
     setTrailerMovie(null);
     setShowUserMenu(false);
@@ -199,6 +208,7 @@ function App() {
     runPageTransition(() => {
       setShowProfile(true);
       setShowFavorites(false);
+      setShowOrderHistory(false);
       setShowLogin(false);
       setShowRegistration(false);
       setSelectedMovie(null);
@@ -211,6 +221,21 @@ function App() {
     if (!currentUser) return;
     runPageTransition(() => {
       setShowFavorites(true);
+      setShowProfile(false);
+      setShowOrderHistory(false);
+      setShowLogin(false);
+      setShowRegistration(false);
+      setSelectedMovie(null);
+      setTrailerMovie(null);
+      setShowUserMenu(false);
+    });
+  };
+
+  const openOrderHistory = () => {
+    if (!currentUser) return;
+    runPageTransition(() => {
+      setShowOrderHistory(true);
+      setShowFavorites(false);
       setShowProfile(false);
       setShowLogin(false);
       setShowRegistration(false);
@@ -246,16 +271,25 @@ function App() {
         <div style={{ background: "#f3f3f3", minHeight: "calc(100vh - 72px)" }}>
           <Profile
             onBack={() => runPageTransition(goHomeImmediate)}
-            onUserRefreshed={(user, favoriteMovies) => {
+            onUserRefreshed={(user, favoriteMovies, paymentCards) => {
               if (isLoggingOutRef.current) {
                 return;
               }
               setCurrentUser({
                 ...user,
+                paymentCards: paymentCards ?? [],
                 favoriteMovies
               });
             }}
           />
+        </div>
+      );
+    }
+
+    if (showOrderHistory && currentUser) {
+      return (
+        <div style={{ background: blueGradientBg, minHeight: "calc(100vh - 72px)" }}>
+          <OrderHistory onBack={openHome} />
         </div>
       );
     }
@@ -369,6 +403,11 @@ function App() {
         <div className="app-navbar-actions">
           {currentUser ? (
             <div className="app-user-menu-anchor">
+              {currentUser.role !== "ADMIN" && (
+                <button className="app-nav-btn app-nav-btn-profile" onClick={openOrderHistory}>
+                  Order History
+                </button>
+              )}
               <button
                 className="app-avatar-btn"
                 onClick={() => setShowUserMenu((v) => !v)}
@@ -386,6 +425,9 @@ function App() {
                   </button>
                   <button className="app-user-menu-item" role="menuitem" onClick={openFavorites}>
                     My favorites
+                  </button>
+                  <button className="app-user-menu-item" role="menuitem" onClick={openOrderHistory}>
+                    Order history
                   </button>
                   <button className="app-user-menu-item app-user-menu-item-danger" role="menuitem" onClick={handleLogout}>
                     Logout

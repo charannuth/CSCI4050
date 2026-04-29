@@ -97,6 +97,9 @@ body {
 .app-user-menu-anchor {
   position: relative;
   z-index: 140;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .app-avatar-btn {

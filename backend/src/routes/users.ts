@@ -272,6 +272,54 @@ router.delete("/me/favorites/:movieId", async (req: AuthenticatedRequest, res, n
   }
 });
 
+router.get("/me/orders", async (req: AuthenticatedRequest, res, next): Promise<void> => {
+  try {
+    const orders = await prisma.booking.findMany({
+      where: { userId: req.userId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        tickets: {
+          include: {
+            seat: true,
+            showtime: {
+              include: {
+                movie: true
+              }
+            }
+          }
+        }
+      }
+    });
+
+    const data = orders.map((order) => {
+      const firstTicket = order.tickets[0];
+      const seats = order.tickets
+        .map((ticket) => `${ticket.seat.row}${ticket.seat.number}`)
+        .sort();
+      const ticketCounts = order.tickets.reduce<Record<string, number>>((acc, ticket) => {
+        const key = ticket.type.toUpperCase();
+        acc[key] = (acc[key] ?? 0) + 1;
+        return acc;
+      }, {});
+
+      return {
+        id: order.id,
+        createdAt: order.createdAt,
+        status: order.status,
+        totalPaid: order.totalAmount,
+        movieTitle: firstTicket?.showtime.movie.title ?? "Unknown Movie",
+        showtime: firstTicket?.showtime.startsAt ?? null,
+        seats,
+        ticketCounts
+      };
+    });
+
+    res.json({ orders: data });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/me/recommendations", async (req: AuthenticatedRequest, res, next): Promise<void> => {
   try {
     const user = await prisma.user.findUnique({

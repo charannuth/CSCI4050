@@ -21,6 +21,13 @@ export default function BookingFlow({ showtimeId, goBack, currentUser }) {
   const [paymentMethod, setPaymentMethod] = useState(savedCards.length > 0 ? savedCards[0].id : "new");
   const [confirmation, setConfirmation] = useState(null);
 
+  // details for the card
+  const [cardName, setCardName] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
+  const [saveCard, setSaveCard] = useState(true);
+
   const totalTickets = tickets.adult + tickets.child + tickets.senior;
   
   // Calculations
@@ -125,11 +132,30 @@ export default function BookingFlow({ showtimeId, goBack, currentUser }) {
       assignTickets('child', tickets.child, TICKET_PRICES.child);
       assignTickets('senior', tickets.senior, TICKET_PRICES.senior);
 
+      // Prepare New Card Data if they chose "Add New Card..."
+      let newCardData = undefined;
+      if (showNewCardForm) {
+        if (!cardNumber || !cardExpiry || !cardName || !cardCvc) {
+          alert("Please fill out all payment details.");
+          setIsProcessing(false);
+          return;
+        }
+        const [mm, yy] = cardExpiry.split("/");
+        newCardData = {
+          cardNumber: cardNumber,
+          cardholderName: cardName,
+          expMonth: parseInt(mm, 10) || 12,
+          expYear: parseInt(yy, 10) || 25,
+          saveCard: saveCard
+        };
+      }
+
       const payload = {
         showtimeId,
         tickets: ticketPayload,
         totalAmount: finalTotal,
-        paymentCardId: showNewCardForm ? undefined : paymentMethod
+        paymentCardId: showNewCardForm ? undefined : paymentMethod,
+        newCard: newCardData // Send the new card data to the backend!
       };
 
       const response = await checkoutBooking(payload);
@@ -296,12 +322,25 @@ export default function BookingFlow({ showtimeId, goBack, currentUser }) {
                 </select>
 
                 {showNewCardForm && (
-                  <div className="mt-4 space-y-4">
-                    <input type="text" placeholder="Cardholder Name" className="w-full bg-gray-900 border border-gray-700 text-white p-3 rounded-md focus:border-cinema-primary outline-none" />
-                    <input type="text" placeholder="Card Number" className="w-full bg-gray-900 border border-gray-700 text-white p-3 rounded-md focus:border-cinema-primary outline-none" />
+                  <div className="mt-4 space-y-4 animate-fade-in">
+                    <input type="text" placeholder="Cardholder Name" value={cardName} onChange={e => setCardName(e.target.value)} className="w-full bg-gray-900 border border-gray-700 text-white p-3 rounded-md focus:border-cinema-primary outline-none" />
+                    <input type="text" placeholder="Card Number" value={cardNumber} onChange={e => setCardNumber(e.target.value)} className="w-full bg-gray-900 border border-gray-700 text-white p-3 rounded-md focus:border-cinema-primary outline-none" />
                     <div className="flex space-x-4">
-                      <input type="text" placeholder="MM/YY" className="w-1/2 bg-gray-900 border border-gray-700 text-white p-3 rounded-md focus:border-cinema-primary outline-none" />
-                      <input type="text" placeholder="CVC" className="w-1/2 bg-gray-900 border border-gray-700 text-white p-3 rounded-md focus:border-cinema-primary outline-none" />
+                      <input type="text" placeholder="MM/YY" value={cardExpiry} onChange={e => setCardExpiry(e.target.value)} className="w-1/2 bg-gray-900 border border-gray-700 text-white p-3 rounded-md focus:border-cinema-primary outline-none" />
+                      <input type="text" placeholder="CVC" value={cardCvc} onChange={e => setCardCvc(e.target.value)} className="w-1/2 bg-gray-900 border border-gray-700 text-white p-3 rounded-md focus:border-cinema-primary outline-none" />
+                    </div>
+                    {/* The Save Card Checkbox */}
+                    <div className="flex items-center space-x-3 pt-2">
+                      <input 
+                        type="checkbox" 
+                        id="saveCard" 
+                        checked={saveCard} 
+                        onChange={(e) => setSaveCard(e.target.checked)}
+                        className="w-5 h-5 accent-cinema-primary cursor-pointer"
+                      />
+                      <label htmlFor="saveCard" className="text-gray-300 cursor-pointer select-none">
+                        Save this card for future purchases
+                      </label>
                     </div>
                   </div>
                 )}

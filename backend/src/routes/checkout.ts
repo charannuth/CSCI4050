@@ -24,7 +24,15 @@ const checkoutSchema = z.object({
     )
     .min(1),
   totalAmount: z.number().min(0),
-  paymentCardId: z.string().optional()
+  paymentCardId: z.string().optional(),
+  // NEW: Accept new card details from the frontend
+  newCard: z.object({
+    cardNumber: z.string().min(1),
+    cardholderName: z.string().min(1),
+    expMonth: z.number(),
+    expYear: z.number(),
+    saveCard: z.boolean()
+  }).optional()
 });
 
 router.post("/", async (req: AuthenticatedRequest, res, next): Promise<void> => {
@@ -51,6 +59,37 @@ router.post("/", async (req: AuthenticatedRequest, res, next): Promise<void> => 
     if (!showtime) {
       res.status(404).json({ error: "Showtime not found." });
       return;
+    }
+
+    // If the user typed in a new card and checked "Save Card", save it to their profile!
+    // If the user typed in a new card and checked "Save Card", save it to their profile!
+    if (body.newCard && body.newCard.saveCard) {
+      const last4Digits = body.newCard.cardNumber.slice(-4);
+      
+      // NEW: Check if this exact card already exists for this user
+      const existingCard = await prisma.paymentCard.findFirst({
+        where: {
+          userId: user.id,
+          last4: last4Digits || "0000",
+          expiresMonth: body.newCard.expMonth,
+          expiresYear: body.newCard.expYear
+        }
+      });
+
+      // ONLY create the card if we didn't find a duplicate
+      if (!existingCard) {
+        await prisma.paymentCard.create({
+          data: {
+            userId: user.id,
+            brand: "Visa", // Mocking the brand for the demo
+            last4: last4Digits || "0000",
+            expiresMonth: body.newCard.expMonth,
+            expiresYear: body.newCard.expYear,
+            cardholderName: body.newCard.cardholderName,
+            encryptedPayload: "mock_encrypted_token_for_demo" // Secure placeholder
+          }
+        });
+      }
     }
 
     if (body.paymentCardId) {

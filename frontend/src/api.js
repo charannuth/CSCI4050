@@ -165,6 +165,10 @@ export function getRecommendations() {
   return request('/api/users/me/recommendations');
 }
 
+export function getOrderHistory() {
+  return request('/api/users/me/orders');
+}
+
 export function addFavorite(movieId) {
   return request('/api/users/me/favorites', {
     method: 'POST',
